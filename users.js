@@ -10,11 +10,18 @@ const addUser = ({ id, name, room }) => {
         return { error: `Username ${name} is taken in room ${room}` }
     }
 
-    const user = { id, name, room }
+    const turn = false
+    const user = { id, name, room, turn }
 
     users.push(user);
 
     return { user }
+}
+
+const changeTurn = (id, bool) => {
+    const index = users.findIndex((user) => user.id === id);
+    users[index].turn = bool;
+    return;
 }
 
 const removeUser = (id) => {
@@ -29,4 +36,4 @@ const getUser = (id) => users.find((user) => user.id === id);
 
 const getUsersInRoom = (room) => users.filter((user) => user.room === room);
 
-module.exports = { addUser, removeUser, getUser, getUsersInRoom };
+module.exports = { addUser, removeUser, getUser, getUsersInRoom, changeTurn };
