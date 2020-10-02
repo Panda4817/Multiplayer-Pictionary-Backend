@@ -36,9 +36,10 @@ io.on('connection', (socket) => {
         socket.broadcast.to(room).emit('waitingFalse');
     });
 
-    socket.on('whoseTurn', ({round, room}) => {
+    socket.on('whoseTurn', ({ round, room }) => {
         const users = getUsersInRoom(room)
         const users_false = users.filter(u => u.turn == false)
+        console.log(users_false, users_false.length)
         if (users_false.length > 0){
             const chosen = users_false[Math.floor(Math.random()*users_false.length)];
             console.log(chosen)
@@ -46,7 +47,7 @@ io.on('connection', (socket) => {
             const word = chooseWord(round);
             updateRoom(room, word);
             socket.emit('turn', {"chosen": chosen, "word": word});
-            socket.broadcast.to(room).emit('turn', {"chosen": chosen, "word": word});
+            socket.broadcast.to(room).emit('turn', {"chosen": chosen, "word": word}); 
         } else {
             socket.emit('round');
             socket.broadcast.to(room).emit('round');
@@ -70,11 +71,11 @@ io.on('connection', (socket) => {
 
     socket.on('startDrawing', ({ x, y }) => {
         const user = getUser(socket.id)
-        socket.broadcast.to(user.room).emit('startDrawing', { x, y });
+        socket.broadcast.to(user.room).emit('startDrawing', { "x": x, "y": y });
     })
     socket.on('moveDrawing', ({ x, y }) => {
         const user = getUser(socket.id)
-        socket.broadcast.to(user.room).emit('moveDrawing', { x, y });
+        socket.broadcast.to(user.room).emit('moveDrawing', { "x": x, "y": y });
     })
     socket.on('endDrawing', () => {
         const user = getUser(socket.id)

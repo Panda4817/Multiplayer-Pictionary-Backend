@@ -20,7 +20,10 @@ const addUser = ({ id, name, room }) => {
 
 const changeTurn = (id, bool) => {
     const index = users.findIndex((user) => user.id === id);
-    users[index].turn = bool;
+    const user = users[index];
+    user.turn = bool;
+    users[index] = user;
+    console.log("changed to ", bool, users[index])
     return;
 }
 
