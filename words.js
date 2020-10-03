@@ -1,8 +1,9 @@
 current_word = {}
 
-const chooseWord = (round) => {
+const chooseWord = (round, room) => {
     // Find list of nouns
-    return "word"
+    current_word[room] = '';
+    return {"word1": "cat", "word2": "dog", "word3": "hat"};
 }
 
 const updateRoom = (room, word) => {

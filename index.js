@@ -5,18 +5,23 @@ const http = require('http');
 
 const { addUser, removeUser, getUser, getUsersInRoom, changeTurn } = require('./users')
 const { chooseWord, updateRoom, getWord, removeRoom } = require('./words')
+const { addRound, increaseRound, getRound, whoseTurn } = require('./turn.js')
 
 const PORT = process.env.PORT || 5000
 
 const router = require('./router');
+const { clearTimeout } = require('timers');
 
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
 const io = socketio(server);
 
+const myClientList = {};
+
 io.on('connection', (socket) => {
     console.log('We have a new connection');
+    myClientList[socket.id] = socket;
 
     socket.on('join', ({ name, room }, callback) => {
         console.log(name, room)
@@ -36,7 +41,55 @@ io.on('connection', (socket) => {
         socket.broadcast.to(room).emit('waitingFalse');
     });
 
-    socket.on('whoseTurn', ({ round, room }) => {
+    socket.on('chosenWord', ({word, room, chosen, round}) => {
+        updateRoom(room, word);
+    })
+
+    socket.on('gameStart', ({ room, round }) => {
+        addRound(room);
+        const { word1, word2, word3 } = chooseWord(round, room);
+        const chosen = getUser(socket.id);
+        socket.emit('choice', {"chosen": chosen, "word1": word1, "word2": word2, "word3": word3,  "round": round})
+        socket.broadcast.to(room).emit('choosing', {"chosen": chosen, "round": round});
+        const t = setTimeout(() => {
+            if (getWord(room) == '') {
+                updateRoom(room, word1);
+                socket.emit('myturn', {"chosen": chosen, "word": word1, "round": round});
+                socket.broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
+            } else {
+                socket.emit('myturn', {"chosen": chosen, "word": getWord(room), "round": round});
+                socket.broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
+            }
+            io.to(room).emit('resetTime');
+        }, 5000);
+        const timer = setInterval(() => {
+            const { chosen, word1, word2, word3, round } = whoseTurn(room)
+            const r = getRound(room);
+            if (r > 5) {
+                socket.emit('gameOver')
+                socket.broadcast.to(room).emit('gameOver')
+                clearInterval(timer);
+            } else {
+                myClientList[chosen.id].emit('choice', {"chosen": chosen, "word1": word1, "word2": word2, "word3": word3,  "round": round})
+                myClientList[chosen.id].broadcast.to(room).emit('choosing', {"chosen": chosen, "round": round});   
+                const t = setTimeout(() => {
+                    if (getWord(room) == '') {
+                        updateRoom(room, word1);
+                        myClientList[chosen.id].emit('myturn', {"chosen": chosen, "word": word1, "round": round});
+                        myClientList[chosen.id].broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});  
+                    } else {
+                        myClientList[chosen.id].emit('myturn', {"chosen": chosen, "word": getWord(room), "round": round});
+                        myClientList[chosen.id].broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
+                    }
+                    io.to(room).emit('resetTime');    
+                }, 5000);
+            }
+        }, 60000);
+        
+        
+    })
+
+    /*socket.on('whoseTurn', ({ round, room }) => {
         const users = getUsersInRoom(room)
         const users_false = users.filter(u => u.turn == false)
         console.log(users_false, users_false.length)
@@ -59,15 +112,16 @@ io.on('connection', (socket) => {
             socket.emit('turn', {"chosen": chosen, "word": word});
             socket.broadcast.to(room).emit('turn', {"chosen": chosen, "word": word});
         }
-    })
-    socket.on('word', (round) =>{
+    })*/
+
+    /*socket.on('word', (room) =>{
         const chosen = getUser(socket.id)
+        const round = getRound(room)
         const word = chooseWord(round);
-        updateRoom(chosen.room, word);
-        socket.emit('turn', {"chosen": chosen , "word": word});
-        socket.emit('skipped');
-        socket.broadcast.to(chosen.room).emit('skipped');
-    });
+        updateRoom(room, word);
+        socket.emit('myturn', {"chosen": chosen, "word": word, "round": round});
+        socket.broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
+    });*/
 
     socket.on('startDrawing', ({ x, y }) => {
         const user = getUser(socket.id)
