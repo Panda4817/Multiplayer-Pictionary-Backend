@@ -10,7 +10,6 @@ const { addRound, increaseRound, getRound, whoseTurn } = require('./turn.js')
 const PORT = process.env.PORT || 5000
 
 const router = require('./router');
-const { clearTimeout } = require('timers');
 
 const app = express();
 app.use(cors());
@@ -18,11 +17,11 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 const myClientList = {};
+const rooms = {};
 
 io.on('connection', (socket) => {
     console.log('We have a new connection');
     myClientList[socket.id] = socket;
-
     socket.on('join', ({ name, room }, callback) => {
         console.log(name, room)
         let { error, user } = addUser({ id: socket.id, name, room });
@@ -34,12 +33,15 @@ io.on('connection', (socket) => {
         console.log(list)
         socket.emit('updateUsers', list);
         socket.broadcast.to(user.room).emit('updateUsers', list);
+        rooms[room] = '';
         
     });
 
     socket.on('changeWaiting', (room) => {
         socket.broadcast.to(room).emit('waitingFalse');
     });
+
+    
 
     socket.on('chosenWord', ({word, room, chosen, round}) => {
         updateRoom(room, word);
@@ -49,8 +51,10 @@ io.on('connection', (socket) => {
         addRound(room);
         const { word1, word2, word3 } = chooseWord(round, room);
         const chosen = getUser(socket.id);
+        changeTurn(socket.id, true);
         socket.emit('choice', {"chosen": chosen, "word1": word1, "word2": word2, "word3": word3,  "round": round})
         socket.broadcast.to(room).emit('choosing', {"chosen": chosen, "round": round});
+        console.log("emitted choice")
         const t = setTimeout(() => {
             if (getWord(room) == '') {
                 updateRoom(room, word1);
@@ -61,88 +65,54 @@ io.on('connection', (socket) => {
                 socket.broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
             }
             io.to(room).emit('resetTime');
+            console.log("emitted reset time")
         }, 5000);
-        const timer = setInterval(() => {
+        rooms[room] = setInterval(() => {
             const { chosen, word1, word2, word3, round } = whoseTurn(room)
+            console.log(chosen, round)
             const r = getRound(room);
             if (r > 5) {
-                socket.emit('gameOver')
-                socket.broadcast.to(room).emit('gameOver')
-                clearInterval(timer);
+                io.to(room).emit('gameOver')
+                clearInterval( rooms[room]);
             } else {
                 myClientList[chosen.id].emit('choice', {"chosen": chosen, "word1": word1, "word2": word2, "word3": word3,  "round": round})
                 myClientList[chosen.id].broadcast.to(room).emit('choosing', {"chosen": chosen, "round": round});   
+                console.log("emitted choice")
                 const t = setTimeout(() => {
                     if (getWord(room) == '') {
                         updateRoom(room, word1);
                         myClientList[chosen.id].emit('myturn', {"chosen": chosen, "word": word1, "round": round});
                         myClientList[chosen.id].broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});  
+                    
                     } else {
                         myClientList[chosen.id].emit('myturn', {"chosen": chosen, "word": getWord(room), "round": round});
                         myClientList[chosen.id].broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
                     }
-                    io.to(room).emit('resetTime');    
+                    io.to(room).emit('resetTime');
+                    console.log("emitted reset time")    
                 }, 5000);
             }
-        }, 60000);
+        }, 65000);
         
         
     })
-
-    /*socket.on('whoseTurn', ({ round, room }) => {
-        const users = getUsersInRoom(room)
-        const users_false = users.filter(u => u.turn == false)
-        console.log(users_false, users_false.length)
-        if (users_false.length > 0){
-            const chosen = users_false[Math.floor(Math.random()*users_false.length)];
-            console.log(chosen)
-            changeTurn(chosen.id, true);
-            const word = chooseWord(round);
-            updateRoom(room, word);
-            socket.emit('turn', {"chosen": chosen, "word": word});
-            socket.broadcast.to(room).emit('turn', {"chosen": chosen, "word": word}); 
-        } else {
-            socket.emit('round');
-            socket.broadcast.to(room).emit('round');
-            const usersReset = users.map(u => changeTurn(u.id, false));
-            const chosen = users[Math.floor(Math.random()*users.length)];
-            console.log(chosen)
-            const word = chooseWord(round + 1);
-            updateRoom(room, word);
-            socket.emit('turn', {"chosen": chosen, "word": word});
-            socket.broadcast.to(room).emit('turn', {"chosen": chosen, "word": word});
-        }
-    })*/
-
-    /*socket.on('word', (room) =>{
-        const chosen = getUser(socket.id)
-        const round = getRound(room)
-        const word = chooseWord(round);
-        updateRoom(room, word);
-        socket.emit('myturn', {"chosen": chosen, "word": word, "round": round});
-        socket.broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
-    });*/
-
-    socket.on('startDrawing', ({ x, y }) => {
-        const user = getUser(socket.id)
-        socket.broadcast.to(user.room).emit('startDrawing', { "x": x, "y": y });
+    
+    socket.on('emitDrawing', ({x, y, room, type }) => {
+        socket.broadcast.to(room).emit('emitDrawing', {x, y, type});
     })
-    socket.on('moveDrawing', ({ x, y }) => {
-        const user = getUser(socket.id)
-        socket.broadcast.to(user.room).emit('moveDrawing', { "x": x, "y": y });
-    })
-    socket.on('endDrawing', () => {
-        const user = getUser(socket.id)
-        socket.broadcast.to(user.room).emit('endDrawing');
-    })
-
-    socket.on('disconnect', (room) => {
+    
+    socket.on('disconnect', () => {
         console.log('User has left');
-        const users = getUsersInRoom(room);
-        if (users.length == 0){
-            removeRoom(room);
-        }
+        const user = getUser(socket.id)
+        clearInterval(rooms[user.room]);
+        io.to(user.room).emit('waitingTrue');
+        removeRoom(user.room);
         removeUser(socket.id);
+        delete myClientList[socket.id];
+        let list = getUsersInRoom(user.room);
+        io.to(user.room).emit('updateUsers', list);
+        
+        
     })
 });
 

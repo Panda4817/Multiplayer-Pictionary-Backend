@@ -23,7 +23,6 @@ const changeTurn = (id, bool) => {
     const user = users[index];
     user.turn = bool;
     users[index] = user;
-    console.log("changed to ", bool, users[index])
     return;
 }
 
