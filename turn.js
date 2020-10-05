@@ -34,6 +34,7 @@ const whoseTurn = (room) => {
         const round = increaseRound(room)
         const usersReset = users.map(u => changeTurn(u.id, false));
         const chosen = users[Math.floor(Math.random()*users.length)];
+        changeTurn(chosen.id, true);
         const { word1, word2, word3 } = chooseWord(round, room);
         return { chosen, word1, word2, word3, round }
     }

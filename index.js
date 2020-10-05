@@ -18,6 +18,7 @@ const io = socketio(server);
 
 const myClientList = {};
 const rooms = {};
+const line_history = {};
 
 io.on('connection', (socket) => {
     console.log('We have a new connection');
@@ -33,7 +34,14 @@ io.on('connection', (socket) => {
         console.log(list)
         socket.emit('updateUsers', list);
         socket.broadcast.to(user.room).emit('updateUsers', list);
+        if (rooms[room] != '') {
+            io.to(user.room).emit('waitingTrue');
+            clearInterval(rooms[room]);
+            console.log(rooms[room])
+        }
         rooms[room] = '';
+        console.log(rooms[room])
+        line_history[room] = []
         
     });
 
@@ -68,12 +76,16 @@ io.on('connection', (socket) => {
             console.log("emitted reset time")
         }, 5000);
         rooms[room] = setInterval(() => {
+            line_history[room] = [];
             const { chosen, word1, word2, word3, round } = whoseTurn(room)
             console.log(chosen, round)
             const r = getRound(room);
             if (r > 5) {
-                io.to(room).emit('gameOver')
-                clearInterval( rooms[room]);
+                const t = setTimeout(() => {
+                  io.to(room).emit('gameOver')
+                    clearInterval(rooms[room]);
+                }, 5000)
+                
             } else {
                 myClientList[chosen.id].emit('choice', {"chosen": chosen, "word1": word1, "word2": word2, "word3": word3,  "round": round})
                 myClientList[chosen.id].broadcast.to(room).emit('choosing', {"chosen": chosen, "round": round});   
@@ -92,19 +104,22 @@ io.on('connection', (socket) => {
                     console.log("emitted reset time")    
                 }, 5000);
             }
-        }, 65000);
+        }, 10000);
         
         
     })
     
-    socket.on('emitDrawing', ({x, y, room, type }) => {
-        socket.broadcast.to(room).emit('emitDrawing', {x, y, type});
+    socket.on('emitDrawing', ({data, room}) => {
+        line_history[room].push(data);
+        socket.broadcast.to(room).emit('draw_line', data);
     })
-    
+
     socket.on('disconnect', () => {
         console.log('User has left');
         const user = getUser(socket.id)
+        console.log(rooms[user.room])
         clearInterval(rooms[user.room]);
+        console.log(rooms[user.room])
         io.to(user.room).emit('waitingTrue');
         removeRoom(user.room);
         removeUser(socket.id);
