@@ -81,6 +81,7 @@ io.on('connection', (socket) => {
             console.log(chosen, round)
             const r = getRound(room);
             if (r > 5) {
+                io.to(room).emit('spinner')
                 const t = setTimeout(() => {
                   io.to(room).emit('gameOver')
                     clearInterval(rooms[room]);
