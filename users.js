@@ -11,7 +11,8 @@ const addUser = ({ id, name, room }) => {
     }
 
     const turn = false
-    const user = { id, name, room, turn }
+    const points = 0
+    const user = { id, name, room, turn, points }
 
     users.push(user);
 
@@ -38,4 +39,18 @@ const getUser = (id) => users.find((user) => user.id === id);
 
 const getUsersInRoom = (room) => users.filter((user) => user.room === room);
 
-module.exports = { addUser, removeUser, getUser, getUsersInRoom, changeTurn };
+const addPoint = (id) => {
+    const index = users.findIndex((user) => user.id === id);
+    const user = users[index];
+    user.points += 1;
+    return; 
+}
+
+const resetPoint = (id) => {
+    const index = users.findIndex((user) => user.id === id);
+    const user = users[index];
+    user.points = 0;
+    return;
+}
+
+module.exports = { addUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint };
