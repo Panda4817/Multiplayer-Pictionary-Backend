@@ -39,10 +39,10 @@ const getUser = (id) => users.find((user) => user.id === id);
 
 const getUsersInRoom = (room) => users.filter((user) => user.room === room);
 
-const addPoint = (id) => {
+const addPoint = (id, point) => {
     const index = users.findIndex((user) => user.id === id);
     const user = users[index];
-    user.points += 1;
+    user.points += point;
     return; 
 }
 

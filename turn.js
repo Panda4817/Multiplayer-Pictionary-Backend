@@ -1,5 +1,5 @@
-const { addUser, removeUser, getUser, getUsersInRoom, changeTurn } = require('./users')
-const { chooseWord, updateRoom, getWord, removeRoom } = require('./words')
+const { getUsersInRoom, changeTurn } = require('./users')
+const { chooseWord } = require('./words')
 
 
 rounds = {}

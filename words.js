@@ -1,5 +1,8 @@
 current_word = {}
 const fs = require("fs");
+const SpellChecker = require('simple-spellchecker');
+const dictionary = SpellChecker.getDictionarySync("en-GB");    
+
 
 const chooseWord = (round, room) => {
     // Find list of nouns
@@ -35,9 +38,34 @@ const removeRoom = (room) => {
     return;
 }
 
+const checkWord = (message, room) => {
+    var msg = '';
+    const wordCount = message.split(" ").length;
+    if ( wordCount > 1) {
+        msg = "Too many words!"
+        return msg;
+    }
+    const myWord = message.toLowerCase();
+    const word = getWord(room);
+    console.log(word);
+    var misspelled = ! dictionary.spellCheck(myWord);
+    if(misspelled && word != myWord) {
+        msg =  "Not the word!";
+    } else {
+        if (word == myWord) {
+            msg  =  "Correct!"
+        } else {
+            msg =  message + " is incorrect!"
+        }
+    }
+    return msg;
+
+}
+
 module.exports = { 
     chooseWord,
     updateRoom, 
     getWord, 
-    removeRoom 
+    removeRoom,
+    checkWord
 };
