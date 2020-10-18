@@ -3,7 +3,7 @@ const socketio = require('socket.io');
 const cors = require('cors')
 const http = require('http');
 
-const { addUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint } = require('./users')
+const { addUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint, changeHadPoints, resetHadPoints } = require('./users')
 const { chooseWord, updateRoom, getWord, removeRoom, checkWord } = require('./words')
 const { addRound, increaseRound, getRound, whoseTurn } = require('./turn')
 const { addTotalScore, reduceTotalScore } = require('./score')
@@ -22,7 +22,7 @@ const myClientList = {};
 const timers = {};
 const line_history = {};
 const choiceTime = 5000
-const turnTime = 35000
+const turnTime = 30000
 
 io.on('connection', (socket) => {
     console.log('We have a new connection');
@@ -34,7 +34,6 @@ io.on('connection', (socket) => {
         return;
     }
     socket.on('join', ({ name, room }, callback) => {
-        console.log(name, room)
         let { error, user } = addUser({ id: socket.id, name, room });
 
         if (error) return callback(error);
@@ -43,12 +42,10 @@ io.on('connection', (socket) => {
         updatePlayers(socket, user.room);
         if (timers[room] != '') {
             io.to(user.room).emit('waitingTrue');
-            clearInterval(timers[room]);
-            console.log(timers[room])
+            //clearInterval(timers[room]);
         }
         timers[room] = '';
-        console.log(timers[room])
-        line_history[room] = []
+        //line_history[room] = []
         
     });
 
@@ -58,26 +55,25 @@ io.on('connection', (socket) => {
 
     
 
-    socket.on('chosenWord', ({word, room, chosen, round}) => {
+    socket.on('chosenWord', ({word, room }) => {
         updateRoom(room, word);
     })
 
     const emitChoice = (round, room, socket, word1, word2, word3, chosen) => {
         if (!socket) {
-            clearInterval(timers[room]);
+            //clearInterval(timers[room]);
             return;
         }
         socket.emit('choice', {"chosen": chosen, "word1": word1, "word2": word2, "word3": word3,  "round": round})
         socket.broadcast.to(room).emit('choosing', {"chosen": chosen, "round": round});
-        console.log("emitted choice")
     }
 
     const emitTurn = (round, room, socket, chosen, word1) => {
         if (!socket) {
-            clearInterval(timers[room]);
+            //clearInterval(timers[room]);
             return;
         }
-        const t = setTimeout(() => {
+        setTimeout(() => {
             if (getWord(room) == '') {
                 updateRoom(room, word1);
                 socket.emit('myturn', {"chosen": chosen, "word": word1, "round": round});
@@ -86,16 +82,26 @@ io.on('connection', (socket) => {
                 socket.emit('myturn', {"chosen": chosen, "word": getWord(room), "round": round});
                 socket.broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
             }
+            var start = new Date();
+            start.setSeconds(start.getSeconds() + turnTime);
+            timers[room] = start;
             io.to(room).emit('resetTime');
-            console.log("emitted reset time")
+            console.log("turn starts")
+            setTimeout(() => {
+                turn(socket, room)
+            }, turnTime);
         }, choiceTime);
+
+        
     }
 
     const gameOver = (room) => {
+        timers[room] = '';
         const t = setTimeout(() => {
             io.to(room).emit('gameOver')
-              clearInterval(timers[room]);
+            //clearInterval(timers[room]);
           }, choiceTime)
+        
     }
 
     const resetPoints = (room) => {
@@ -104,30 +110,74 @@ io.on('connection', (socket) => {
         return;
     }
 
-    socket.on('gameStart', ({ room, round }) => {
+    const resetPlayerHadPoints = (room) => {
+        const users = getUsersInRoom(room);
+        users.map(user => resetHadPoints(user.id));
+        return;
+    }
+
+    const restartGame = (room, socket) => {
         resetPoints(room);
         addTotalScore(room);
-        updatePlayers(socket, room);
         addRound(room);
+        updatePlayers(socket, room);
+        socket.broadcast.to(room).emit('reset');
+    }
+
+    const turn = (socket, room) => {
+        const user = getUser(socket.id);
+        if (user === undefined || !user) {
+            return;
+        }
+        const r = getRound(room);
+        if (user.turn === false) {
+            const { word1, word2, word3 } = chooseWord(r, room);
+            changeTurn(socket.id, true);
+            emitChoice(r, room, socket, word1, word2, word3, user); 
+            emitTurn(r, room, socket, user, word1);
+        } else {
+            io.to(room).emit('message', { user: "admin", text: "word was "+ getWord(room) });
+            addTotalScore(room);
+            resetPlayerHadPoints(room);
+            const { chosen, word1, word2, word3, round } = whoseTurn(room)
+            if (round > 5) {
+                io.to(room).emit('spinner')
+                gameOver(room);
+                return;
+            } else {
+                emitChoice(round, room, myClientList[chosen.id], word1, word2, word3, chosen); 
+                emitTurn(round, room, myClientList[chosen.id], chosen, word1);
+            }
+        }  
+    }
+
+    socket.on('gameStart', ({ room, round }) => {
+        restartGame(room, socket);
+        turn(socket, room);
+        
+        
+        
+        /*// first turn
         const { word1, word2, word3 } = chooseWord(round, room);
         const chosen = getUser(socket.id);
         changeTurn(socket.id, true);
         emitChoice(round, room, socket, word1, word2, word3, chosen);
         emitTurn(round, room, socket, chosen, word1);
+        // all other turns
         timers[room] = setInterval(() => {
             io.to(room).emit('message', { user: "admin", text: "word was "+ getWord(room) });
             addTotalScore(room);
+            resetPlayerHadPoints(room);
             //line_history[room] = [];
             const { chosen, word1, word2, word3, round } = whoseTurn(room)
-            const r = getRound(room);
-            if (r > 5) {
+            if (round > 5) {
                 io.to(room).emit('spinner')
                 gameOver(room);    
             } else {
                 emitChoice(round, room, myClientList[chosen.id], word1, word2, word3, chosen); 
                 emitTurn(round, room, myClientList[chosen.id], chosen, word1);
             }
-        }, turnTime);
+        }, turnTime);*/
         
         
     })
@@ -139,11 +189,18 @@ io.on('connection', (socket) => {
 
     socket.on('sendMessage', (message, callback) => {
         const user = getUser(socket.id);
-        const text = checkWord(message, user.room);
+        let text = checkWord(message, user.room);
         if (text === "Correct!"){
-            const count = reduceTotalScore(user.room);
-            addPoint(socket.id, count * 100);
-            updatePlayers(socket, user.room);
+            if (user.hadPoints === true) {
+                text = user.name[0].toUpperCase() + user.name.slice(1) + " already guessed right!"
+            } else {
+                changeHadPoints(socket.id);
+                const count = reduceTotalScore(user.room);
+                addPoint(socket.id, count * 100);
+                updatePlayers(socket, user.room);
+                text = user.name[0].toUpperCase() + user.name.slice(1) + " is correct!"
+            }
+            
         }
         io.to(user.room).emit('message', { user: user.name, text: text });
     
@@ -152,9 +209,11 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         console.log('User has left');
-        const user = getUser(socket.id)
-        clearInterval(timers[user.room]);
-        console.log(timers[user.room])
+        const user = getUser(socket.id);
+        if (user === undefined || !user) {
+            return;
+        }
+        //clearInterval(timers[user.room]);
         io.to(user.room).emit('waitingTrue');
         removeRoom(user.room);
         removeUser(socket.id);

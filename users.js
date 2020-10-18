@@ -11,8 +11,9 @@ const addUser = ({ id, name, room }) => {
     }
 
     const turn = false
+    const hadPoints = false
     const points = 0
-    const user = { id, name, room, turn, points }
+    const user = { id, name, room, turn, points, hadPoints }
 
     users.push(user);
 
@@ -43,6 +44,7 @@ const addPoint = (id, point) => {
     const index = users.findIndex((user) => user.id === id);
     const user = users[index];
     user.points += point;
+    users[index] = user;
     return; 
 }
 
@@ -50,7 +52,35 @@ const resetPoint = (id) => {
     const index = users.findIndex((user) => user.id === id);
     const user = users[index];
     user.points = 0;
+    user.hadPoints = false
+    users[index] = user;
     return;
 }
 
-module.exports = { addUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint };
+const changeHadPoints = (id) => {
+    const index = users.findIndex((user) => user.id === id);
+    const user = users[index];
+    user.hadPoints = true;
+    users[index] = user;
+    return;
+}
+
+const resetHadPoints = (id) => {
+    const index = users.findIndex((user) => user.id === id);
+    const user = users[index];
+    user.hadPoints = false
+    users[index] = user;
+    return;
+}
+
+module.exports = { 
+    addUser, 
+    removeUser, 
+    getUser, 
+    getUsersInRoom, 
+    changeTurn, 
+    addPoint, 
+    resetPoint,
+    changeHadPoints,
+    resetHadPoints
+};

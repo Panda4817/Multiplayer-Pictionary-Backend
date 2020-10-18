@@ -42,21 +42,16 @@ const checkWord = (message, room) => {
     var msg = '';
     const wordCount = message.split(" ").length;
     if ( wordCount > 1) {
-        msg = "Too many words!"
+        msg = "Too many words!\n" + message
         return msg;
     }
     const myWord = message.toLowerCase();
     const word = getWord(room);
-    console.log(word);
     var misspelled = ! dictionary.spellCheck(myWord);
-    if(misspelled && word != myWord) {
-        msg =  "Not the word!";
+    if(misspelled || word != myWord) {
+        msg =  "Not the word!\n" + message;
     } else {
-        if (word == myWord) {
-            msg  =  "Correct!"
-        } else {
-            msg =  message + " is incorrect!"
-        }
+        msg  =  "Correct!"
     }
     return msg;
 
