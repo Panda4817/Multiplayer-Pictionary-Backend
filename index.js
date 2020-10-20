@@ -22,13 +22,13 @@ const myClientList = {};
 const timers = {};
 const line_history = {};
 const choiceTime = 5000
-const turnTime = 30000
+const turnTime = 36000
 
 io.on('connection', (socket) => {
     console.log('We have a new connection');
     myClientList[socket.id] = socket;
     const updatePlayers = (socket, room) => {
-        let list = getUsersInRoom(room);
+        const list = getUsersInRoom(room);
         socket.emit('updateUsers', list);
         socket.broadcast.to(room).emit('updateUsers', list);
         return;
@@ -41,8 +41,8 @@ io.on('connection', (socket) => {
         socket.join(user.room).emit();
         updatePlayers(socket, user.room);
         if (timers[room] != '') {
-            io.to(user.room).emit('waitingTrue');
-            //clearInterval(timers[room]);
+            clearInterval(timers[room]);
+            io.to(user.room).emit('waitingTrue'); 
         }
         timers[room] = '';
         //line_history[room] = []
@@ -61,7 +61,7 @@ io.on('connection', (socket) => {
 
     const emitChoice = (round, room, socket, word1, word2, word3, chosen) => {
         if (!socket) {
-            //clearInterval(timers[room]);
+            clearInterval(timers[room]);
             return;
         }
         socket.emit('choice', {"chosen": chosen, "word1": word1, "word2": word2, "word3": word3,  "round": round})
@@ -70,10 +70,12 @@ io.on('connection', (socket) => {
 
     const emitTurn = (round, room, socket, chosen, word1) => {
         if (!socket) {
-            //clearInterval(timers[room]);
+            clearInterval(timers[room]);
             return;
         }
-        setTimeout(() => {
+        console.log("start 5s choosing time", new Date().toLocaleTimeString())
+        const t = setTimeout(() => {
+            console.log("end 5s choosing time", new Date().toLocaleTimeString())
             if (getWord(room) == '') {
                 updateRoom(room, word1);
                 socket.emit('myturn', {"chosen": chosen, "word": word1, "round": round});
@@ -82,24 +84,17 @@ io.on('connection', (socket) => {
                 socket.emit('myturn', {"chosen": chosen, "word": getWord(room), "round": round});
                 socket.broadcast.to(room).emit('turn', {"chosen": chosen, "round": round});
             }
-            var start = new Date();
-            start.setSeconds(start.getSeconds() + turnTime);
-            timers[room] = start;
             io.to(room).emit('resetTime');
-            console.log("turn starts")
-            setTimeout(() => {
-                turn(socket, room)
-            }, turnTime);
+            console.log("turn starts", new Date().toLocaleTimeString())
+            
         }, choiceTime);
-
         
     }
 
     const gameOver = (room) => {
-        timers[room] = '';
+        clearInterval(timers[room]);
         const t = setTimeout(() => {
             io.to(room).emit('gameOver')
-            //clearInterval(timers[room]);
           }, choiceTime)
         
     }
@@ -116,8 +111,19 @@ io.on('connection', (socket) => {
         return;
     }
 
+    const resetPlayerTurns = (room) => {
+        const users = getUsersInRoom(room);
+        users.map(u => changeTurn(u.id, false));
+        return;
+    }
+
     const restartGame = (room, socket) => {
+        clearInterval(timers[room])
+        timers[room] = '';
+        console.log(timers[room])
         resetPoints(room);
+        resetPlayerHadPoints(room);
+        resetPlayerTurns(room);
         addTotalScore(room);
         addRound(room);
         updatePlayers(socket, room);
@@ -127,6 +133,7 @@ io.on('connection', (socket) => {
     const turn = (socket, room) => {
         const user = getUser(socket.id);
         if (user === undefined || !user) {
+            clearInterval(timers[room])
             return;
         }
         const r = getRound(room);
@@ -151,33 +158,16 @@ io.on('connection', (socket) => {
         }  
     }
 
-    socket.on('gameStart', ({ room, round }) => {
+    socket.on('gameStart', (room) => {
         restartGame(room, socket);
         turn(socket, room);
+        console.log("start interval timer", new Date().toLocaleTimeString())
+            timers[room] = setInterval(() => {
+                console.log("interval timer completed", new Date().toLocaleTimeString())
+                turn(socket, room);
+            }, turnTime);  
         
         
-        
-        /*// first turn
-        const { word1, word2, word3 } = chooseWord(round, room);
-        const chosen = getUser(socket.id);
-        changeTurn(socket.id, true);
-        emitChoice(round, room, socket, word1, word2, word3, chosen);
-        emitTurn(round, room, socket, chosen, word1);
-        // all other turns
-        timers[room] = setInterval(() => {
-            io.to(room).emit('message', { user: "admin", text: "word was "+ getWord(room) });
-            addTotalScore(room);
-            resetPlayerHadPoints(room);
-            //line_history[room] = [];
-            const { chosen, word1, word2, word3, round } = whoseTurn(room)
-            if (round > 5) {
-                io.to(room).emit('spinner')
-                gameOver(room);    
-            } else {
-                emitChoice(round, room, myClientList[chosen.id], word1, word2, word3, chosen); 
-                emitTurn(round, room, myClientList[chosen.id], chosen, word1);
-            }
-        }, turnTime);*/
         
         
     })
@@ -213,13 +203,13 @@ io.on('connection', (socket) => {
         if (user === undefined || !user) {
             return;
         }
-        //clearInterval(timers[user.room]);
+        clearInterval(timers[user.room]);
         io.to(user.room).emit('waitingTrue');
         removeRoom(user.room);
-        removeUser(socket.id);
         delete myClientList[socket.id];
-        let list = getUsersInRoom(user.room);
-        io.to(user.room).emit('updateUsers', list);
+        removeUser(socket.id);
+        const newlist = getUsersInRoom(user.room);
+        io.to(user.room).emit('updateUsers', newlist);
         
         
     })
