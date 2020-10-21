@@ -197,6 +197,10 @@ io.on('connection', (socket) => {
         callback();
       });
 
+    socket.on('clear', (room) => {
+        socket.broadcast.to(room).emit('clear');
+    })
+
     socket.on('disconnect', () => {
         console.log('User has left');
         const user = getUser(socket.id);
