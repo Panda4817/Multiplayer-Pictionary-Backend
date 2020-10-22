@@ -1,7 +1,7 @@
 current_word = {}
 const fs = require("fs");
-const SpellChecker = require('simple-spellchecker');
-const dictionary = SpellChecker.getDictionarySync("en-GB");    
+//const SpellChecker = require('simple-spellchecker');
+//const dictionary = SpellChecker.getDictionarySync("en-GB");    
 
 
 const chooseWord = (round, room) => {
@@ -9,11 +9,11 @@ const chooseWord = (round, room) => {
     current_word[room] = '';
     let text;
     if (round < 3) {
-        text = fs.readFileSync("./nounlist.txt", "utf-8").split('\n').filter(w => w.length < 5)  
+        text = fs.readFileSync("./pictionary.txt", "utf-8").split('\n').map(w => {return w.trim()}).filter(w => w.length < 6)  
     } else if (round < 5) {
-        text = fs.readFileSync("./nounlist.txt", "utf-8").split('\n').filter(w => w.length < 6)
+        text = fs.readFileSync("./pictionary.txt", "utf-8").split('\n').map(w => {return w.trim()}).filter(w => w.length < 7)
     } else {
-        text = fs.readFileSync("./nounlist.txt", "utf-8").split('\n').filter(w => w.length < 7)
+        text = fs.readFileSync("./pictionary.txt", "utf-8").split('\n').map(w => {return w.trim()}).filter(w => w.length > 7)
     }
 
     const word1 = text.splice(Math.floor(Math.random()*text.length), 1);
@@ -40,15 +40,9 @@ const removeRoom = (room) => {
 
 const checkWord = (message, room) => {
     var msg = '';
-    const wordCount = message.split(" ").length;
-    if ( wordCount > 1) {
-        msg = "Too many words!\n" + message
-        return msg;
-    }
     const myWord = message.toLowerCase();
     const word = getWord(room);
-    var misspelled = ! dictionary.spellCheck(myWord);
-    if(misspelled || word != myWord) {
+    if(word != myWord) {
         msg =  "Not the word!\n" + message;
     } else {
         msg  =  "Correct!"
