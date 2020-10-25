@@ -8,7 +8,7 @@ audience
 avengers	
 backache	
 backbone	
-backflip	
+back flip	
 backpack	
 bagpipes	
 baguette	
@@ -42,7 +42,6 @@ crescent
 crossbow	
 crutches	
 customer	
-daftpunk	
 dandruff	
 defender	
 dentures	
@@ -79,8 +78,6 @@ freezing
 frosting	
 gangster	
 gardener	
-garfield	
-geronimo	
 gift wrap	
 goalpost	
 goldfish	
@@ -210,7 +207,6 @@ sneakers
 snowball	
 snow cone	
 sombrero	
-sorority	
 soulmate	
 soy sauce	
 sparkles	
@@ -308,12 +304,11 @@ bonfire
 boombox	
 bowling	
 breakup	
-britney	
 broncos	
 brownie	
 bubbles	
 buffalo	
-bunkbed	
+bunk bed	
 burrito	
 butcher	
 cabinet	
@@ -321,7 +316,7 @@ camping
 captain	
 carmelo	
 carpool	
-carseat	
+car seat	
 carwash	
 cashier	
 catfish	
@@ -359,11 +354,11 @@ dreidel
 dresser	
 dribble	
 drummer	
-drumset	
+drum set	
 dustpan	
 earring	
 eclipse	
-eggroll	
+egg roll	
 emerald	
 england	
 explode	
@@ -371,7 +366,7 @@ eyeball
 eyebrow	
 eyelash	
 factory	
-fanmail	
+fan mail	
 feather	
 fencing	
 finland	
@@ -385,7 +380,7 @@ frisbee
 funeral	
 gameboy	
 gandalf	
-gasmask	
+gas mask	
 germany	
 giraffe	
 glasses	
@@ -398,9 +393,9 @@ grenade
 griffin	
 gymnast	
 haircut	
-hairdye	
-hairgel	
-hairtie	
+hair dye	
+hair gel	
+hair tie	
 hammock	
 hamster
 handbag	
@@ -412,7 +407,7 @@ headset
 holiday	
 husband	
 iceberg	
-icecube	
+ice cube	
 ireland	
 ironman	
 jamaica	
@@ -482,8 +477,8 @@ peacock
 pegasus	
 penguin	
 perfume	
-petfood	
-petshop	
+pet food	
+pet shop	
 phoenix	
 picasso	
 picture	
@@ -502,7 +497,7 @@ pumpkin
 pyramid	
 quarter	
 raccoon	
-racecar	
+race car	
 raiders	
 rainbow	
 rapture	
@@ -531,7 +526,7 @@ sheriff
 shoebox	
 shotgun	
 shuttle	
-sixpack	
+six pack	
 skydive	
 skyline	
 smoking	
@@ -572,7 +567,7 @@ tuesday
 tugboat	
 twitter	
 ukulele	
-unibrow	
+uni brow	
 unicorn	
 vaccine	
 vampire	
@@ -732,7 +727,7 @@ hockey
 hoodie	
 horton	
 hotdog	
-hottub	
+hot tub	
 hummer	
 hungry	
 hustle	
@@ -744,7 +739,7 @@ island
 jacket	
 jaguar	
 jersey	
-jetski	
+jet ski	
 jigsaw	
 jordan	
 juggle	
@@ -1129,7 +1124,6 @@ jeans
 jello	
 jelly	
 jenga	
-jeter	
 joker	
 jonas	
 judge	
@@ -1499,7 +1493,6 @@ foot
 fork	
 fort	
 foul	
-frat	
 frog	
 gale	
 gate	
@@ -1541,7 +1534,6 @@ ipad
 iron	
 jail	
 jaws	
-jayz	
 jazz	
 jeep	
 jump	
