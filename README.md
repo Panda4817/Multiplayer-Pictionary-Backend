@@ -15,4 +15,4 @@ Made using NodeJS and Express server.
 Runs the backend of the app in the development mode.<br />
 Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
 
-Make sure frontend is also started. Repo to frontend is [https://github.com/Panda4817/Multiplayer-Pictionary-Frontend](Multiplayer-Pictionary-Frontend).
+Make sure frontend is also started. Repo to frontend is [Multiplayer-Pictionary-Frontend](https://github.com/Panda4817/Multiplayer-Pictionary-Frontend).
