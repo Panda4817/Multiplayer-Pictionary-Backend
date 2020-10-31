@@ -7,17 +7,24 @@ const fs = require("fs")
 
 const chooseWord = (round, room) => {
     if (current_word[room]) {
-        previous_words[room] = [...previous_words[room], current_word[room]]
+        if (previous_words[room]) {
+            previous_words[room] = [...previous_words[room], current_word[room]]
+        } else {
+            previous_words[room] = [current_word[room]]
+        }
     }
     current_word[room] = ''
-    let text = fs.readFileSync("./pictionary.txt", "utf-8").split('\n').map(w => { return w.trim() }).filter((w) => {
-        for (var i=0; i<previous_words[room].length; i++) {
-            if (w === previous_words[room][i]) {
-                return false
+    let text = fs.readFileSync("./pictionary.txt", "utf-8").split('\n').map(w => { return w.trim() })
+    if (previous_words[room]) {
+        text = text.filter((w) => {
+            for (var i=0; i<previous_words[room].length; i++) {
+                if (w === previous_words[room][i]) {
+                    return false
+                }
             }
-        }
-        return true
-    })
+            return true
+        })
+    }
     const word1 = text.splice(Math.floor(Math.random() * text.length), 1)
     const word2 = text.splice(Math.floor(Math.random() * text.length), 1)
     const word3 = text.splice(Math.floor(Math.random() * text.length), 1)
