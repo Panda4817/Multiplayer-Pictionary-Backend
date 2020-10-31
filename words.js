@@ -5,7 +5,6 @@ const fs = require("fs")
 
 
 const chooseWord = (round, room) => {
-    // Find list of nouns
     current_word[room] = ''
     let text
     if (round < 3) {

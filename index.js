@@ -136,6 +136,9 @@ io.on('connection', (socket) => {
         }
         const r = getRound(room)
         if (user.turn === false) {
+            if (getWord(room)) {
+                io.to(room).emit('message', { user: "admin", text: "word was " + getWord(room) })  
+            }
             const { word1, word2, word3 } = chooseWord(r, room)
             changeTurn(socket.id, true)
             emitChoice(r, room, socket, word1, word2, word3, user)
