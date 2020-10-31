@@ -1,8 +1,9 @@
 current_word = {}
+previous_words = {}
 const fs = require("fs")
 //const SpellChecker = require('simple-spellchecker')
 //const dictionary = SpellChecker.getDictionarySync("en-GB")    
-previous_words = {}
+
 
 const chooseWord = (round, room) => {
     if (current_word[room]) {
@@ -26,9 +27,6 @@ const chooseWord = (round, room) => {
 }
 
 const updateRoom = (room, word) => {
-    if (current_word[room]) {
-        previous_words[room] = [...previous_words[room], current_word[room]]
-    }
     current_word[room] = word
     return true
 }
