@@ -960,7 +960,6 @@ zipper
 zombie	
 zygote	
 acorn	
-adele	
 alarm	
 alien	
 align	
@@ -1332,7 +1331,6 @@ udder
 under	
 union	
 unzip	
-usher	
 vader	
 vault	
 vegas	
