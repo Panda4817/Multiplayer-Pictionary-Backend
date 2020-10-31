@@ -39,7 +39,7 @@ const removeRoom = (room) => {
 
 const checkWord = (message, room) => {
     var msg = ''
-    const myWord = message.toLowerCase()
+    const myWord = message.trim().toLowerCase()
     const word = getWord(room)
     if (word != myWord) {
         msg = "Not the word!\n" + message
