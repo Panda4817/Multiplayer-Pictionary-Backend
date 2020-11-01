@@ -201,6 +201,11 @@ io.on('connection', (socket) => {
         socket.broadcast.to(room).emit('clear')
     })
 
+    socket.on('undo', (room) => {
+        socket.broadcast.to(room).emit('undo')
+    })
+
+
     socket.on('disconnect', () => {
         console.log('User has left')
         const user = getUser(socket.id)
