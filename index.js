@@ -22,6 +22,7 @@ const myClientList = {}
 const timers = {}
 const choiceTime = 5000
 const turnTime = 36000
+const currentArtist = {}
 
 io.on('connection', (socket) => {
     console.log('We have a new connection')
@@ -44,7 +45,7 @@ io.on('connection', (socket) => {
             io.to(user.room).emit('waitingTrue')
         }
         timers[room] = ''
-
+        currentArtist[room] = ''
     })
 
     socket.on('changeWaiting', (room) => {
@@ -118,6 +119,7 @@ io.on('connection', (socket) => {
     const restartGame = (room, socket) => {
         clearInterval(timers[room])
         timers[room] = ''
+        currentArtist[room] = ''
         console.log(timers[room])
         resetPoints(room)
         resetPlayerHadPoints(room)
@@ -141,6 +143,7 @@ io.on('connection', (socket) => {
             }
             const { word1, word2, word3 } = chooseWord(r, room)
             changeTurn(socket.id, true)
+            currentArtist[room] = socket.id
             emitChoice(r, room, socket, word1, word2, word3, user)
             emitTurn(r, room, socket, user, word1)
         } else {
@@ -148,6 +151,7 @@ io.on('connection', (socket) => {
             addTotalScore(room)
             resetPlayerHadPoints(room)
             const { chosen, word1, word2, word3, round } = whoseTurn(room)
+            currentArtist[room] = chosen.id
             if (round > 5) {
                 io.to(room).emit('spinner')
                 gameOver(room)
@@ -187,6 +191,7 @@ io.on('connection', (socket) => {
                 changeHadPoints(socket.id)
                 const count = reduceTotalScore(user.room)
                 addPoint(socket.id, count * 100)
+                addPoint(currentArtist[user.room], 100)
                 updatePlayers(socket, user.room)
                 text = user.name[0].toUpperCase() + user.name.slice(1) + " is correct!"
             }
