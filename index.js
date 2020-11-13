@@ -1,38 +1,50 @@
+// Importing packages
 const express = require('express')
 const socketio = require('socket.io')
 const cors = require('cors')
 const http = require('http')
 
+// My custom modules and their functions imported
 const { addUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint, changeHadPoints, resetHadPoints } = require('./users')
 const { chooseWord, updateRoom, getWord, removeRoom, checkWord } = require('./words')
 const { addRound, increaseRound, getRound, whoseTurn } = require('./turn')
 const { addTotalScore, reduceTotalScore } = require('./score')
 
+// App set up
 const PORT = process.env.PORT || 5000
 
 const router = require('./router')
-const { captureRejectionSymbol } = require('events')
 
 const app = express()
 app.use(cors())
 const server = http.createServer(app)
 const io = socketio(server)
 
+// List of all client sockets
 const myClientList = {}
+// Timers per room
 const timers = {}
+// Standard times for choosing and drawing
 const choiceTime = 5000
 const turnTime = 36000
+// List of current person drawing per room
 const currentArtist = {}
 
+// All functions over sockets
 io.on('connection', (socket) => {
     console.log('We have a new connection')
+    // Add new socket connection
     myClientList[socket.id] = socket
+
+    // Function to emit any change to player data (room players)
     const updatePlayers = (socket, room) => {
         const list = getUsersInRoom(room)
         socket.emit('updateUsers', list)
         socket.broadcast.to(room).emit('updateUsers', list)
         return
     }
+
+    // Join event to handle new players joining
     socket.on('join', ({ name, room, avatar }, callback) => {
         let { error, user } = addUser({ id: socket.id, name, room, avatar })
         console.log(user)
@@ -48,16 +60,18 @@ io.on('connection', (socket) => {
         currentArtist[room] = ''
     })
 
+    // change waiting event, emits when game started to let everyone enter the game room 
     socket.on('changeWaiting', (room) => {
         socket.broadcast.to(room).emit('waitingFalse')
     })
 
 
-
+    // chosen word event, updates room information
     socket.on('chosenWord', ({ word, room }) => {
         updateRoom(room, word)
     })
 
+    // Function to handle what happens when it is player choosing time
     const emitChoice = (round, room, socket, word1, word2, word3, chosen) => {
         if (!socket) {
             clearInterval(timers[room])
@@ -67,6 +81,7 @@ io.on('connection', (socket) => {
         socket.broadcast.to(room).emit('choosing', { "chosen": chosen, "round": round })
     }
 
+    // Function to handle what happens when it is player drawing time
     const emitTurn = (round, room, socket, chosen, word1) => {
         if (!socket) {
             clearInterval(timers[room])
@@ -90,6 +105,7 @@ io.on('connection', (socket) => {
 
     }
 
+    // Function to handle what happens when game is over, emits game over event
     const gameOver = (room) => {
         clearInterval(timers[room])
         const t = setTimeout(() => {
@@ -98,24 +114,28 @@ io.on('connection', (socket) => {
 
     }
 
+    // A function to handle resetting points for each player in the room
     const resetPoints = (room) => {
         const users = getUsersInRoom(room)
         users.map(user => resetPoint(user.id))
         return
     }
 
+    // A function to reset the hadPoints property for each user
     const resetPlayerHadPoints = (room) => {
         const users = getUsersInRoom(room)
         users.map(user => resetHadPoints(user.id))
         return
     }
 
+    // A function to handle changing turn property for each user in the room
     const resetPlayerTurns = (room) => {
         const users = getUsersInRoom(room)
         users.map(u => changeTurn(u.id, false))
         return
     }
 
+    // A function to handle the restart of a game
     const restartGame = (room, socket) => {
         clearInterval(timers[room])
         timers[room] = ''
@@ -130,6 +150,7 @@ io.on('connection', (socket) => {
         socket.broadcast.to(room).emit('reset')
     }
 
+    // a function  to handle the turn logic 
     const turn = (socket, room) => {
         const user = getUser(socket.id)
         if (user === undefined || !user) {
@@ -163,6 +184,7 @@ io.on('connection', (socket) => {
         }
     }
 
+    // game start event, starts turn logic
     socket.on('gameStart', (room) => {
         restartGame(room, socket)
         turn(socket, room)
@@ -177,10 +199,12 @@ io.on('connection', (socket) => {
 
     })
 
+    // emit drawing event, emits drawing data to players
     socket.on('emitDrawing', ({ data, room }) => {
         socket.broadcast.to(room).emit('draw_line', data)
     })
 
+    // send message event, emits whether guess was right or wrong to all players
     socket.on('sendMessage', (message, callback) => {
         const user = getUser(socket.id)
         let text = checkWord(message, user.room)
@@ -202,15 +226,17 @@ io.on('connection', (socket) => {
         callback()
     })
 
+    // clear event, emits clear canvas event to players
     socket.on('clear', (room) => {
         socket.broadcast.to(room).emit('clear')
     })
 
+    // undo event, emits undo event to players (so all players in the room see the same drawing)
     socket.on('undo', (room) => {
         socket.broadcast.to(room).emit('undo')
     })
 
-
+    // disconnect event, when player leaves the room
     socket.on('disconnect', () => {
         console.log('User has left')
         const user = getUser(socket.id)

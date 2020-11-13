@@ -3,11 +3,12 @@ const router = express.Router()
 const fs = require("fs")
 
 
-
+// back end index page
 router.get('/', (req, res) => {
     res.send('Server is up and running')
 })
 
+// Random room name generated from a list of words
 router.get('/room', (req, res) => {
     const text = fs.readFileSync("./words.txt", "utf-8").split('\n')
     const words = []

@@ -1,5 +1,6 @@
 const users = []
 
+// Function to add a user to users lists
 const addUser = ({ id, name, room, avatar }) => {
     name = name.trim().toLowerCase()
     room = room.trim().toLowerCase()
@@ -20,6 +21,7 @@ const addUser = ({ id, name, room, avatar }) => {
     return { user }
 }
 
+// A function to change turn property of user (so every player in a room gets one turn each per round)
 const changeTurn = (id, bool) => {
     const index = users.findIndex((user) => user.id === id)
     const user = users[index]
@@ -28,6 +30,7 @@ const changeTurn = (id, bool) => {
     return
 }
 
+// A function to remove a user when user leaves room
 const removeUser = (id) => {
     const index = users.findIndex((user) => user.id === id)
 
@@ -36,10 +39,13 @@ const removeUser = (id) => {
     }
 }
 
+// A function to get user with id
 const getUser = (id) => users.find((user) => user.id === id)
 
+// A function to get all players in a room
 const getUsersInRoom = (room) => users.filter((user) => user.room === room)
 
+// A function to add points to a user
 const addPoint = (id, point) => {
     const index = users.findIndex((user) => user.id === id)
     const user = users[index]
@@ -48,6 +54,7 @@ const addPoint = (id, point) => {
     return
 }
 
+// A function to reset points to 0 for a user
 const resetPoint = (id) => {
     const index = users.findIndex((user) => user.id === id)
     const user = users[index]
@@ -57,6 +64,7 @@ const resetPoint = (id) => {
     return
 }
 
+// A function to change hadPoints property (so users cannot keep getting points when guessed right)
 const changeHadPoints = (id) => {
     const index = users.findIndex((user) => user.id === id)
     const user = users[index]
@@ -65,6 +73,7 @@ const changeHadPoints = (id) => {
     return
 }
 
+// A function to change hadPoints property to false when new game started
 const resetHadPoints = (id) => {
     const index = users.findIndex((user) => user.id === id)
     const user = users[index]

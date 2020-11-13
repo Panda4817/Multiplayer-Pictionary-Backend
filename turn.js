@@ -4,12 +4,14 @@ const { chooseWord } = require('./words')
 
 rounds = {}
 
+// A function to add a room to the rounds object with start round value to 0
 const addRound = (room) => {
     const round = 1
     rounds[room] = round
     return round
 }
 
+// A function increase the round by 1
 const increaseRound = (room) => {
     const old = rounds[room]
     const n = old + 1
@@ -17,10 +19,12 @@ const increaseRound = (room) => {
     return n
 }
 
+// A function to get round value for a room
 const getRound = (room) => {
     return rounds[room]
 }
 
+// A function to choose the next person to draw in a round
 const whoseTurn = (room) => {
     const users = getUsersInRoom(room)
     const users_false = users.filter(u => u.turn == false)
