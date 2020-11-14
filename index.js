@@ -29,6 +29,10 @@ const choiceTime = 5000
 const turnTime = 36000
 // List of current person drawing per room
 const currentArtist = {}
+// person that clicks 'start game' or 'play again'
+const startedGame = {}
+// Line history
+const lines = {}
 
 // All functions over sockets
 io.on('connection', (socket) => {
@@ -39,6 +43,9 @@ io.on('connection', (socket) => {
     // Function to emit any change to player data (room players)
     const updatePlayers = (socket, room) => {
         const list = getUsersInRoom(room)
+        if (list.length == 1) {
+            timers[room] = ''
+        }
         socket.emit('updateUsers', list)
         socket.broadcast.to(room).emit('updateUsers', list)
         return
@@ -52,12 +59,18 @@ io.on('connection', (socket) => {
 
         socket.join(user.room).emit()
         updatePlayers(socket, user.room)
+        // Update player with line data if game has already started
         if (timers[room] != '') {
-            clearInterval(timers[room])
-            io.to(user.room).emit('waitingTrue')
+            socket.emit('waitingFalse')
+            if (lines[room]) {
+                lines[room].map((data) => {
+                    socket.emit('draw_line', data)
+                })  
+            }
+            addTotalScore(room)
+            socket.emit('message', { user: "admin", text: "You have joined an existing game. The timer and round number will update in the next turn. You can guess now." })
+            socket.broadcast.to(room).emit('message', { user: "admin", text: user.name[0].toUpperCase() + user.name.slice(1) + " has joined!" })
         }
-        timers[room] = ''
-        currentArtist[room] = ''
     })
 
     // change waiting event, emits when game started to let everyone enter the game room 
@@ -75,6 +88,8 @@ io.on('connection', (socket) => {
     const emitChoice = (round, room, socket, word1, word2, word3, chosen) => {
         if (!socket) {
             clearInterval(timers[room])
+            timers[room] = ''
+            io.to(room).emit('gameOver')
             return
         }
         socket.emit('choice', { "chosen": chosen, "word1": word1, "word2": word2, "word3": word3, "round": round })
@@ -85,6 +100,8 @@ io.on('connection', (socket) => {
     const emitTurn = (round, room, socket, chosen, word1) => {
         if (!socket) {
             clearInterval(timers[room])
+            timers[room] = ''
+            io.to(room).emit('gameOver')
             return
         }
         console.log("start 5s choosing time", new Date().toLocaleTimeString())
@@ -108,6 +125,7 @@ io.on('connection', (socket) => {
     // Function to handle what happens when game is over, emits game over event
     const gameOver = (room) => {
         clearInterval(timers[room])
+        timers[room] = ''
         const t = setTimeout(() => {
             io.to(room).emit('gameOver')
         }, choiceTime)
@@ -140,6 +158,8 @@ io.on('connection', (socket) => {
         clearInterval(timers[room])
         timers[room] = ''
         currentArtist[room] = ''
+        startedGame[room] = ''
+        lines[room] = []
         console.log(timers[room])
         resetPoints(room)
         resetPlayerHadPoints(room)
@@ -155,6 +175,8 @@ io.on('connection', (socket) => {
         const user = getUser(socket.id)
         if (user === undefined || !user) {
             clearInterval(timers[room])
+            timers[room] = ''
+            io.to(room).emit('gameOver')
             return
         }
         const r = getRound(room)
@@ -165,12 +187,14 @@ io.on('connection', (socket) => {
             const { word1, word2, word3 } = chooseWord(r, room)
             changeTurn(socket.id, true)
             currentArtist[room] = socket.id
+            lines[room] = []
             emitChoice(r, room, socket, word1, word2, word3, user)
             emitTurn(r, room, socket, user, word1)
         } else {
             io.to(room).emit('message', { user: "admin", text: "word was " + getWord(room) })
             addTotalScore(room)
             resetPlayerHadPoints(room)
+            lines[room] = []
             const { chosen, word1, word2, word3, round } = whoseTurn(room)
             currentArtist[room] = chosen.id
             if (round > 5) {
@@ -187,6 +211,8 @@ io.on('connection', (socket) => {
     // game start event, starts turn logic
     socket.on('gameStart', (room) => {
         restartGame(room, socket)
+        startedGame[room] = socket.id
+        socket.emit('message', { user: "admin", text: "You have started the game. If you leave, every one will be kicked to the post game page." })
         turn(socket, room)
         console.log("start interval timer", new Date().toLocaleTimeString())
         timers[room] = setInterval(() => {
@@ -201,6 +227,13 @@ io.on('connection', (socket) => {
 
     // emit drawing event, emits drawing data to players
     socket.on('emitDrawing', ({ data, room }) => {
+        if (lines[room]) {
+           lines[room].push(data) 
+        } else {
+            lines[room] = []
+            lines[room].push(data) 
+        }
+        
         socket.broadcast.to(room).emit('draw_line', data)
     })
 
@@ -228,11 +261,13 @@ io.on('connection', (socket) => {
 
     // clear event, emits clear canvas event to players
     socket.on('clear', (room) => {
+        lines[room] = []
         socket.broadcast.to(room).emit('clear')
     })
 
     // undo event, emits undo event to players (so all players in the room see the same drawing)
     socket.on('undo', (room) => {
+        lines[room] = lines[room].slice(0, -10)
         socket.broadcast.to(room).emit('undo')
     })
 
@@ -243,13 +278,26 @@ io.on('connection', (socket) => {
         if (user === undefined || !user) {
             return
         }
-        clearInterval(timers[user.room])
-        io.to(user.room).emit('waitingTrue')
-        removeRoom(user.room)
         delete myClientList[socket.id]
         removeUser(socket.id)
         const newlist = getUsersInRoom(user.room)
         io.to(user.room).emit('updateUsers', newlist)
+        // If the current number of players in the room is less than 2, last player kicked to the waiting room
+        if (newlist.length < 2) {
+            clearInterval(timers[user.room])
+            timers[user.room] = ''
+            io.to(user.room).emit('waitingTrue')
+            removeRoom(user.room)
+        // Else the person who started the game has left, every one is taken to post game page immediately
+        } else if (startedGame[user.room] === user.id) {
+            clearInterval(timers[user.room])
+            timers[user.room] = ''
+            io.to(user.room).emit('gameOver')
+        }
+        // Else, users are sent a message stating a player has left
+        else {
+            io.to(user.room).emit('message', { user: "admin", text: user.name[0].toUpperCase() + user.name.slice(1) + " has left! If they were drawing, wait for their turn to end to continue." })
+        }
 
 
     })
