@@ -29,8 +29,6 @@ const choiceTime = 5000
 const turnTime = 36000
 // List of current person drawing per room
 const currentArtist = {}
-// person that clicks 'start game' or 'play again'
-const startedGame = {}
 // Line history
 const lines = {}
 
@@ -158,7 +156,6 @@ io.on('connection', (socket) => {
         clearInterval(timers[room])
         timers[room] = ''
         currentArtist[room] = ''
-        startedGame[room] = ''
         lines[room] = []
         console.log(timers[room])
         resetPoints(room)
@@ -171,53 +168,39 @@ io.on('connection', (socket) => {
     }
 
     // a function  to handle the turn logic 
-    const turn = (socket, room) => {
-        const user = getUser(socket.id)
-        if (user === undefined || !user) {
+    const turn = (room) => {
+        if (getWord(room)) {
+            io.to(room).emit('message', { user: "admin", text: "word was " + getWord(room) })
+        }
+        addTotalScore(room)
+        resetPlayerHadPoints(room)
+        lines[room] = []
+        const { chosen, word1, word2, word3, round } = whoseTurn(room)
+        if (chosen === undefined || !chosen) {
             clearInterval(timers[room])
             timers[room] = ''
             io.to(room).emit('gameOver')
             return
         }
-        const r = getRound(room)
-        if (user.turn === false) {
-            if (getWord(room)) {
-                io.to(room).emit('message', { user: "admin", text: "word was " + getWord(room) })  
-            }
-            const { word1, word2, word3 } = chooseWord(r, room)
-            changeTurn(socket.id, true)
-            currentArtist[room] = socket.id
-            lines[room] = []
-            emitChoice(r, room, socket, word1, word2, word3, user)
-            emitTurn(r, room, socket, user, word1)
+        currentArtist[room] = chosen.id
+        if (round > 5) {
+            io.to(room).emit('spinner')
+            gameOver(room)
+            return
         } else {
-            io.to(room).emit('message', { user: "admin", text: "word was " + getWord(room) })
-            addTotalScore(room)
-            resetPlayerHadPoints(room)
-            lines[room] = []
-            const { chosen, word1, word2, word3, round } = whoseTurn(room)
-            currentArtist[room] = chosen.id
-            if (round > 5) {
-                io.to(room).emit('spinner')
-                gameOver(room)
-                return
-            } else {
-                emitChoice(round, room, myClientList[chosen.id], word1, word2, word3, chosen)
-                emitTurn(round, room, myClientList[chosen.id], chosen, word1)
-            }
+            emitChoice(round, room, myClientList[chosen.id], word1, word2, word3, chosen)
+            emitTurn(round, room, myClientList[chosen.id], chosen, word1)
         }
     }
 
     // game start event, starts turn logic
     socket.on('gameStart', (room) => {
         restartGame(room, socket)
-        startedGame[room] = socket.id
-        socket.emit('message', { user: "admin", text: "You have started the game. If you leave, every one will be kicked to the post game page." })
-        turn(socket, room)
+        turn(room)
         console.log("start interval timer", new Date().toLocaleTimeString())
         timers[room] = setInterval(() => {
             console.log("interval timer completed", new Date().toLocaleTimeString())
-            turn(socket, room)
+            turn(room)
         }, turnTime)
 
 
@@ -288,14 +271,8 @@ io.on('connection', (socket) => {
             timers[user.room] = ''
             io.to(user.room).emit('waitingTrue')
             removeRoom(user.room)
-        // Else the person who started the game has left, every one is taken to post game page immediately
-        } else if (startedGame[user.room] === user.id) {
-            clearInterval(timers[user.room])
-            timers[user.room] = ''
-            io.to(user.room).emit('gameOver')
-        }
         // Else, users are sent a message stating a player has left
-        else {
+        } else {
             io.to(user.room).emit('message', { user: "admin", text: user.name[0].toUpperCase() + user.name.slice(1) + " has left! If they were drawing, wait for their turn to end to continue." })
         }
 
