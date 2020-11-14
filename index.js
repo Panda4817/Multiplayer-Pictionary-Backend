@@ -273,6 +273,7 @@ io.on('connection', (socket) => {
             removeRoom(user.room)
         // Else, users are sent a message stating a player has left
         } else {
+            addTotalScore(user.room)
             io.to(user.room).emit('message', { user: "admin", text: user.name[0].toUpperCase() + user.name.slice(1) + " has left! If they were drawing, wait for their turn to end to continue." })
         }
 
