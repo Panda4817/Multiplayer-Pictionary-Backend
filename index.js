@@ -27,6 +27,8 @@ const timers = {}
 // Standard times for choosing and drawing
 const choiceTime = 5000
 const turnTime = 36000
+//Standard number of rounds
+const ROUND = 5
 // List of current person drawing per room
 const currentArtist = {}
 // Line history
@@ -124,6 +126,7 @@ io.on('connection', (socket) => {
     const gameOver = (room) => {
         clearInterval(timers[room])
         timers[room] = ''
+        io.to(room).emit('spinner')
         const t = setTimeout(() => {
             io.to(room).emit('gameOver')
         }, choiceTime)
@@ -183,8 +186,7 @@ io.on('connection', (socket) => {
             return
         }
         currentArtist[room] = chosen.id
-        if (round > 5) {
-            io.to(room).emit('spinner')
+        if (round > ROUND) {
             gameOver(room)
             return
         } else {
