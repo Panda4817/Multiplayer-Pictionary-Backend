@@ -6,14 +6,6 @@ const fs = require("fs")
 
 // Function to choose 3 words from the noun list
 const chooseWord = (round, room) => {
-    // Keep track of previous words so all new words are provided for the duration of the room
-    if (current_word[room]) {
-        if (previous_words[room]) {
-            previous_words[room] = [...previous_words[room], current_word[room]]
-        } else {
-            previous_words[room] = [current_word[room]]
-        }
-    }
     // Clear the current word
     current_word[room] = ''
     // Retrieve words from txt file
@@ -33,13 +25,18 @@ const chooseWord = (round, room) => {
     const word2 = text.splice(Math.floor(Math.random() * text.length), 1)
     const word3 = text.splice(Math.floor(Math.random() * text.length), 1)
 
-
-    return { "word1": word1, "word2": word2, "word3": word3 }
+    return { "word1": word1[0], "word2": word2[0], "word3": word3[0] }
 }
 
 // Function to update current word for room
 const updateRoom = (room, word) => {
     current_word[room] = word
+    // Keep track of previous words so all new words are provided for the duration of the room
+    if (previous_words[room]) {
+        previous_words[room].push(current_word[room])
+    } else {
+        previous_words[room] = [current_word[room]]
+    }
     return true
 }
 
