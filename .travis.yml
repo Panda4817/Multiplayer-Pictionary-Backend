@@ -9,5 +9,4 @@ deploy:
   provider: heroku
   api_key: $HEROKU_API_KEY
   app: multiplayer-pictionary
-  run: npm start
   on: master
