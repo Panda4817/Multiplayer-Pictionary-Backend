@@ -1,8 +1,6 @@
 current_word = {}
 previous_words = {}
 const fs = require("fs")
-//const SpellChecker = require('simple-spellchecker')
-//const dictionary = SpellChecker.getDictionarySync("en-GB")    
 
 // Function to choose 3 words from the noun list
 const chooseWord = (round, room) => {
