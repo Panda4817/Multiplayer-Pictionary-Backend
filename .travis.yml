@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - 'node'
 install:
-  - npm start
+  - npm install
 script:
   - npm test
 deploy:
