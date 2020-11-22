@@ -1,10 +1,10 @@
 const chai = require('chai');
 const assert = chai.assert;
-const server = require('../index')
+const {server} = require('../index')
 const chaiHttp = require('chai-http')
 chai.use(chaiHttp)
 
-describe('Router functional tests', function() {
+describe('Router Integration tests', function() {
     it('GET / => Server up and running', function(done) {
         chai.request(server)
           .get('/')

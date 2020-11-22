@@ -82,6 +82,27 @@ const resetHadPoints = (id) => {
     return
 }
 
+// A function to handle resetting points for each player in the room
+const resetPoints = (room) => {
+    const usersList = getUsersInRoom(room)
+    usersList.map(user => resetPoint(user.id))
+    return
+}
+
+// A function to reset the hadPoints property for each user
+const resetPlayerHadPoints = (room) => {
+    const usersList = getUsersInRoom(room)
+    usersList.map(user => resetHadPoints(user.id))
+    return
+}
+
+// A function to handle changing turn property for each user in the room
+const resetPlayerTurns = (room) => {
+    const usersList = getUsersInRoom(room)
+    usersList.map(u => changeTurn(u.id, false))
+    return
+}
+
 module.exports = {
     addUser,
     removeUser,
@@ -91,5 +112,8 @@ module.exports = {
     addPoint,
     resetPoint,
     changeHadPoints,
-    resetHadPoints
+    resetHadPoints,
+    resetPoints,
+    resetPlayerHadPoints,
+    resetPlayerTurns
 }

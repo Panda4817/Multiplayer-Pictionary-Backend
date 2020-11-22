@@ -2,27 +2,35 @@ const chai = require('chai')
 const assert = chai.assert
 
 // My custom modules and their functions imported
-const { addUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint, changeHadPoints, resetHadPoints } = require('../users')
+const { addUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint, changeHadPoints, resetHadPoints, resetPoints, resetPlayerHadPoints, resetPlayerTurns } = require('../users')
 const { chooseWord, updateRoom, getWord, removeRoom, checkWord } = require('../words')
 const { addRound, increaseRound, getRound, whoseTurn } = require('../turn')
-const { addTotalScore, reduceTotalScore } = require('../score')
+const { addTotalScore, reduceTotalScore, getTotalScore } = require('../score')
+const { myClientList, timers, lines, currentArtist, choiceTime, turnTime, ROUND, updatePlayers, socketCheck, emitChoice, emitTurn, gameOver, restartGame, turn, updateMsgTextAndAddPoints, disconnectCleanUp } = require('../socketio_util')
+
+// Global const
+const room = 'testroom'
+const room_addUser = 'TestRoom '
+const avatar = '0x1F600'
+const id = 123
+const id2 = 456
+const id3 = 789
+const name = 'Test '
+const name2 = 'Test2'
+const name3 = 'Test3'
 
 describe('Custom functions test suite (with chai):', function() {
     it('addUser', function() {
         // Arrange
-        let id = 123
-        let name = 'Test '
-        let room = 'TestRoom '
-        let avatar = '0x1F600'
         let expectedName = 'test'
-        let expectedRoom = 'testroom'
+        let expectedRoom = room
 
         // Act
         const expectedOutput = {"user": { 
             "id": id, "name": expectedName, "room": expectedRoom, "avatar": avatar, "turn": false, "points": 0, "hadPoints": false 
             }, "error": undefined
         }
-        const { error, user } = addUser({ id, name, room, avatar })
+        const { error, user } = addUser({ id, name, room: room_addUser, avatar })
 
         // Assert
         assert.deepEqual({ user, error }, expectedOutput)
@@ -33,9 +41,9 @@ describe('Custom functions test suite (with chai):', function() {
     it('getUser', function() {
         // Act
         const expected = { 
-            "id": 123, "name": 'test', "room": 'testroom', "avatar": '0x1F600', "turn": false, "points": 0, "hadPoints": false 
+            "id": id, "name": 'test', "room": room, "avatar": '0x1F600', "turn": false, "points": 0, "hadPoints": false 
         }
-        const actual = getUser(123)
+        const actual = getUser(id)
 
         // Assert
         assert.deepEqual(actual, expected)
@@ -44,9 +52,9 @@ describe('Custom functions test suite (with chai):', function() {
     it('getUsersInRoom', function() {
         // Act
         const expected = [{ 
-            "id": 123, "name": 'test', "room": 'testroom', "avatar": '0x1F600', "turn": false, "points": 0, "hadPoints": false 
+            "id": id, "name": 'test', "room": room, "avatar": '0x1F600', "turn": false, "points": 0, "hadPoints": false 
         }]
-        const actual = getUsersInRoom('testroom')
+        const actual = getUsersInRoom(room)
 
         // Assert
         assert.equal(actual.length, expected.length)
@@ -55,16 +63,16 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('changeTurn', function() {
         // Act
-        changeTurn(123, true)
-        const actual = getUser(123)
+        changeTurn(id, true)
+        const actual = getUser(id)
 
         // Assert
         assert.equal(actual['turn'], true)
         assert.notEqual(actual['turn'], false)
 
         // Act
-        changeTurn(123, false)
-        const secondActual = getUser(123)
+        changeTurn(id, false)
+        const secondActual = getUser(id)
 
         // Assert
         assert.equal(secondActual['turn'], false)
@@ -73,15 +81,15 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('addPoint', function() {
         // Act
-        addPoint(123, 100)
-        const actual = getUser(123)
+        addPoint(id, 100)
+        const actual = getUser(id)
 
         // Assert
         assert.equal(actual['points'], 100)
 
         // Act
-        addPoint(123, 300)
-        const secondActual = getUser(123)
+        addPoint(id, 300)
+        const secondActual = getUser(id)
 
         // Assert
         assert.equal(secondActual['points'], 400)
@@ -89,8 +97,8 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('resetPoint', function() {
         // Act
-        resetPoint(123)
-        const actual = getUser(123)
+        resetPoint(id)
+        const actual = getUser(id)
 
         // Assert
         assert.equal(actual['points'], 0)
@@ -98,8 +106,8 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('changeHadPoints', function() {
         // Act
-        changeHadPoints(123)
-        const actual = getUser(123)
+        changeHadPoints(id)
+        const actual = getUser(id)
 
         // Assert
         assert.equal(actual['hadPoints'], true)
@@ -108,29 +116,110 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('resetHadPoints', function() {
         // Act
-        resetHadPoints(123)
-        const actual = getUser(123)
+        resetHadPoints(id)
+        const actual = getUser(id)
 
         // Assert
         assert.equal(actual['hadPoints'], false)
         assert.notEqual(actual['hadPoints'], true)
     })
 
-    it('removeUser', function() {
+    it('resetPoints', function() {
+        // Arrange
+        addUser({'id': id2, 'name': name2, room: room_addUser, avatar})
+        addUser({'id': id3, 'name': name3, room: room_addUser, avatar})
+        addPoint(id, 100)
+        addPoint(id2, 100)
+        addPoint(id3, 100)
+
+        assert.notEqual(getUser(id)['points'], 0)
+        assert.notEqual(getUser(id2)['points'], 0)
+        assert.notEqual(getUser(id3)['points'], 0)
+
         // Act
-        const removed = removeUser(123)
-        const actual = getUser(123)
+        resetPoints(room)
+
+        setTimeout(() => {
+            // Assert
+            assert.equal(getUser(id)['points'], 0)
+            assert.equal(getUser(id2)['points'], 0)
+            assert.equal(getUser(id3)['points'], 0)
+        }, 10)
+        
+
+    })
+
+    it('resetPlayerHadPoints', function() {
+        // Arrange
+        changeHadPoints(id)
+        changeHadPoints(id2)
+        changeHadPoints(id3)
+
+        assert.notEqual(getUser(id)['hadPoints'], false)
+        assert.notEqual(getUser(id2)['hadPoints'], false)
+        assert.notEqual(getUser(id3)['hadPoints'], false)
+
+        // Act
+        resetPlayerHadPoints(room)
 
         // Assert
-        assert.equal(actual, undefined)
-        assert.equal(removed['id'], 123)
+        setTimeout(() => {
+            assert.equal(getUser(id)['hadPoints'], false)
+            assert.equal(getUser(id2)['hadPoints'], false)
+            assert.equal(getUser(id3)['hadPoints'], false)
+
+        }, 10)
+        
+        
+        
+    })
+
+    it('resetPlayerTurns', function() {
+        // Arrange
+        changeTurn(id, true)
+        changeTurn(id2, true)
+        changeTurn(id3, true)
+
+        assert.notEqual(getUser(id)['turn'], false)
+        assert.notEqual(getUser(id2)['turn'], false)
+        assert.notEqual(getUser(id3)['turn'], false)
+
+        // Act
+        resetPlayerTurns(room)
+
+        setTimeout(() => {
+            // Assert
+            assert.equal(getUser(id)['turn'], false)
+            assert.equal(getUser(id2)['turn'], false)
+            assert.equal(getUser(id3)['turn'], false)
+        }, 10)
+        
+    })
+
+    it('removeUser', function() {
+        // Act
+        const removed1 = removeUser(id)
+        const removed2 = removeUser(id2)
+        const removed3 = removeUser(id3)
+        const actual1 = getUser(id)
+        const actual2 = getUser(id2)
+        const actual3 = getUser(id3)
+
+        // Assert
+        assert.equal(actual1, undefined)
+        assert.equal(removed1['id'], id)
+        assert.equal(actual2, undefined)
+        assert.equal(removed2['id'], id2)
+        assert.equal(actual3, undefined)
+        assert.equal(removed3['id'], id3)
+        
     })
 
     it('updateRoom and getWord', function() {
         // Act
-        const actual1 = getWord('testroom')
-        const actual = updateRoom('testroom', 'car')
-        const actual2 = getWord('testroom')
+        const actual1 = getWord(room)
+        const actual = updateRoom(room, 'car')
+        const actual2 = getWord(room)
 
         // Assert
         assert.equal(actual1, undefined)
@@ -140,8 +229,8 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('chooseWord', function() {
         // Act
-        const actual = chooseWord(1, 'testroom')
-        const actual2 = getWord('testroom')
+        const actual = chooseWord(1, room)
+        const actual2 = getWord(room)
         
         // Assert
         assert.equal(actual2, '')
@@ -159,11 +248,11 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('checkWord', function() {
         // Act
-        updateRoom('testroom', 'cat')
-        const actual = checkWord('cat', 'testroom')
-        const actual1 = checkWord('cat ', 'testroom')
-        const actual2 = checkWord('CAT', 'testroom')
-        const actual3 = checkWord('dog', 'testroom')
+        updateRoom(room, 'cat')
+        const actual = checkWord('cat', room)
+        const actual1 = checkWord('cat ', room)
+        const actual2 = checkWord('CAT', room)
+        const actual3 = checkWord('dog', room)
 
         // Assert
         assert.equal(actual, "Correct!")
@@ -175,8 +264,8 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('removeRoom', function() {
         // Act
-        removeRoom('testroom')
-        const actual = getWord('testroom')
+        removeRoom(room)
+        const actual = getWord(room)
 
         // Assert
         assert.equal(actual, undefined)
@@ -186,7 +275,7 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('addRound', function() {
         // Act
-        const actual = addRound('testroom')
+        const actual = addRound(room)
 
         // Assert
         assert.equal(actual, 1)
@@ -194,7 +283,7 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('increaseRound', function() {
         // Act
-        const actual = increaseRound('testroom')
+        const actual = increaseRound(room)
 
         // Assert
         assert.equal(actual, 2)
@@ -202,7 +291,7 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('getRound', function() {
         // Act
-        const actual = getRound('testroom')
+        const actual = getRound(room)
 
         // Assert
         assert.equal(actual, 2)
@@ -210,29 +299,21 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('whoseTurn', function() {
         // Arrange
-        let id = 123
-        let id2 = 456
-        let id3 = 789
-        let name = 'Test '
-        let name2 = 'Test2'
-        let name3 = 'Test3'
-        let room = 'TestRoom '
-        let avatar = '0x1F600'
-        addUser({id, name, room, avatar})
-        addUser({'id': id2, 'name': name2, room, avatar})
-        addUser({'id': id3, 'name': name3, room, avatar})
+        addUser({id, name, room: room_addUser, avatar})
+        addUser({'id': id2, 'name': name2, room: room_addUser, avatar})
+        addUser({'id': id3, 'name': name3, room: room_addUser, avatar})
 
         // Act
-        addRound('testroom')
-        const actual = whoseTurn('testroom')
+        addRound(room)
+        const actual = whoseTurn(room)
         const user = getUser(actual['chosen']['id'])
-        const word = updateRoom('testroom', actual['word1'])
-        const actual2 = whoseTurn('testroom')
+        const word = updateRoom(room, actual['word1'])
+        const actual2 = whoseTurn(room)
         const user2 = getUser(actual2['chosen']['id'])
-        const word2 = updateRoom('testroom', actual2['word2'])
-        const actual3 = whoseTurn('testroom')
+        const word2 = updateRoom(room, actual2['word2'])
+        const actual3 = whoseTurn(room)
         const user3 = getUser(actual3['chosen']['id'])
-        const word3 = updateRoom('testroom', actual3['word3'])
+        const word3 = updateRoom(room, actual3['word3'])
 
         // Assert
         // right keys
@@ -262,8 +343,8 @@ describe('Custom functions test suite (with chai):', function() {
 
 
         // Act 2
-        const actual4 = whoseTurn('testroom')
-        const users = getUsersInRoom('testroom')
+        const actual4 = whoseTurn(room)
+        const users = getUsersInRoom(room)
         const users_false = users.filter(u => u.turn == false)
 
         // Assert 2
@@ -281,7 +362,7 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('addTotalScore', function() {
         // Act
-        const actual = addTotalScore('testroom')
+        const actual = addTotalScore(room)
 
         // Assert
         assert.equal(actual, 3)
@@ -289,12 +370,20 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('reduceTotalScore', function() {
         // Act
-        const actual = reduceTotalScore('testroom')
+        const actual = reduceTotalScore(room)
         // Assert
         assert.equal(actual, 3)
         // Act 2
-        const actual2 = reduceTotalScore('testroom')
+        const actual2 = reduceTotalScore(room)
         // Assert 2
         assert.equal(actual2, 2)
+    })
+
+    it('getTotalScore', function() {
+        // Act
+        const actual = getTotalScore(room)
+
+        // Assert
+        assert.equal(actual, 1)
     })
 });

@@ -17,7 +17,13 @@ const reduceTotalScore = (room) => {
     return old
 }
 
+// Get total scores
+const getTotalScore = (room) => {
+    return scores[room]
+}
+
 module.exports = {
     addTotalScore,
-    reduceTotalScore
+    reduceTotalScore,
+    getTotalScore
 }

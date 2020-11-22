@@ -1,8 +1,8 @@
 const { getUsersInRoom, changeTurn } = require('./users')
 const { chooseWord } = require('./words')
 
-
-rounds = {}
+// list of rounds per room
+const rounds = {}
 
 // A function to add a room to the rounds object with start round value to 0
 const addRound = (room) => {
@@ -44,9 +44,10 @@ const whoseTurn = (room) => {
     }
 }
 
+
 module.exports = {
     addRound,
     increaseRound,
     getRound,
-    whoseTurn,
+    whoseTurn
 }
