@@ -15,9 +15,12 @@ const avatar = '0x1F600'
 const id = 123
 const id2 = 456
 const id3 = 789
+const id4 = 101
 const name = 'Test '
 const name2 = 'Test2'
 const name3 = 'Test3'
+const longName = 'abcdefghijklm'
+const longRoom = 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu'
 
 describe('Custom functions test suite (with chai):', function() {
     it('addUser', function() {
@@ -37,6 +40,36 @@ describe('Custom functions test suite (with chai):', function() {
         assert.equal(user['name'], expectedOutput['user']['name'])
         assert.equal(user['room'], expectedOutput['user']['room'])
     });
+
+    it('addUser - long name fails', function() {
+        // Act
+        const {error, user} = addUser({ id:id2, name:longName, room, avatar})
+        const expectedOutput = {"user": undefined, "error": "Username is too long"}
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+
+    })
+
+    it('addUser - long room fails', function() {
+        // Act
+        const {error, user} = addUser({ id:id3, name:name2, room:longRoom, avatar})
+        const expectedOutput = {"user": undefined, "error": "Room name is too long"}
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+
+    })
+
+    it('addUser - same username fails', function() {
+        // Act
+        const {error, user} = addUser({ id:id4, name, room, avatar})
+        const expectedOutput = {"user": undefined, "error": "Username test is taken in room testroom"}
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+
+    })
 
     it('getUser', function() {
         // Act

@@ -11,6 +11,14 @@ const addUser = ({ id, name, room, avatar }) => {
         return { error: `Username ${name} is taken in room ${room}` }
     }
 
+    if (name.length > 12) {
+        return { error: `Username is too long` }
+    }
+
+    if (room.length > 150) {
+        return { error: `Room name is too long` }
+    }
+
     const turn = false
     const hadPoints = false
     const points = 0
