@@ -60,15 +60,19 @@ const checkWord = (message, room) => {
     const parts = word.split(" ")
     if (word != myWord) {
         msg = "Not the word!\n" + filter.clean(message)
-        if (parts.length < 2) {
-            return msg
-        }
-        const msg_parts = myWord.split(parts[0])
-        if (msg_parts.length < 2) {
-            return msg
-        }
-        if (msg_parts[1] == parts[1]) {
-            msg = "Correct!"
+        if (parts.length > 1) {
+            const msg_parts = myWord.split(parts[0])
+            if (msg_parts.length < 2) {
+                return msg
+            }
+            if (msg_parts[1] == parts[1]) {
+                msg = "Correct!"
+            }
+        } else {
+            const msg_parts = myWord.split(" ")
+            if (msg_parts.join("") == word) {
+                msg = "Correct!"
+            }
         }
     } else {
         msg = "Correct!"

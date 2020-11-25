@@ -351,14 +351,15 @@ describe('Custom functions test suite (with chai):', function() {
         assert.isString(actual['word3'])
     })
 
-    it('checkWord - one part word', function() {
+    it('checkWord - one word (no spaces)', function() {
         // Act
-        updateRoom(room, 'cat')
-        const actual = checkWord('cat', room)
-        const actual1 = checkWord('cat ', room)
-        const actual2 = checkWord('CAT', room)
+        updateRoom(room, 'catnip')
+        const actual = checkWord('catnip', room)
+        const actual1 = checkWord('catnip ', room)
+        const actual2 = checkWord('CATnip', room)
         const actual3 = checkWord('dog', room)
         const actual4 = checkWord('asshole', room)
+        const actual5 = checkWord('cat nip', room)
 
         // Assert
         assert.equal(actual, "Correct!")
@@ -367,6 +368,7 @@ describe('Custom functions test suite (with chai):', function() {
         assert.notEqual(actual3, "Correct!")
         assert.equal(actual3, "Not the word!\ndog")
         assert.equal(actual4, "Not the word!\n*******")
+        assert.equal(actual5, "Correct!")
     })
 
     it('checkWord - two part word', function() {
