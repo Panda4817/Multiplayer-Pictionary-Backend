@@ -20,8 +20,8 @@ const avatar = '0x1F600'
 const n1 = 'test'
 const n2 =  'test2'
 const n3 = 'test3'
-const small_time = 10
-const medium_time = 20
+const small_time = 20
+const medium_time = 30
 
 describe('Socket integration tests', function() {
   
