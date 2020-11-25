@@ -98,7 +98,7 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('addUser - unclean name fails', function() {
         // Act
-        const {error, user} = addUser({ id4, name:uncleanWord, room, avatar})
+        const {error, user} = addUser({ id:id4, name:uncleanWord, room, avatar})
         const expectedOutput = {"user": undefined, "error": "Ensure username and/or room name is clean"}
 
         // Assert
@@ -108,7 +108,7 @@ describe('Custom functions test suite (with chai):', function() {
 
     it('addUser - unclean room fails', function() {
         // Act
-        const {error, user} = addUser({ id5, name, room:uncleanWord, avatar})
+        const {error, user} = addUser({ id:id5, name, room:uncleanWord, avatar})
         const expectedOutput = {"user": undefined, "error": "Ensure username and/or room name is clean"}
 
         // Assert
