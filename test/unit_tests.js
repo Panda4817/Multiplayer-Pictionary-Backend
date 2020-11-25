@@ -11,16 +11,20 @@ const { myClientList, timers, lines, currentArtist, choiceTime, turnTime, ROUND,
 // Global const
 const room = 'testroom'
 const room_addUser = 'TestRoom '
+const room2 = 'testroom2'
 const avatar = '0x1F600'
 const id = 123
 const id2 = 456
 const id3 = 789
 const id4 = 101
+const id5 = 112
 const name = 'Test '
 const name2 = 'Test2'
 const name3 = 'Test3'
 const longName = 'abcdefghijklm'
 const longRoom = 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu'
+const invalidAvatar = 'qwerty'
+const otherHexCode = '123'
 
 describe('Custom functions test suite (with chai):', function() {
     it('addUser', function() {
@@ -69,6 +73,32 @@ describe('Custom functions test suite (with chai):', function() {
         // Assert
         assert.deepEqual({ user, error }, expectedOutput)
 
+    })
+
+    it('addUser - invalid hexcode results in invisible avatar', function() {
+        // Act
+        const {error, user} = addUser({ id:id4, name, room:room2, avatar:invalidAvatar})
+        const expectedOutput = {"user": { 
+            "id": id4, "name": 'test', "room":'testroom2', "avatar": '', "turn": false, "points": 0, "hadPoints": false 
+            }, "error": undefined
+        }
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+        assert.deepEqual(user['avatar'], '')
+    })
+
+    it('addUser - a hexcode not in the array results in invisible avatar', function() {
+        // Act
+        const {error, user} = addUser({ id:id5, name:name2, room:room2, avatar:otherHexCode})
+        const expectedOutput = {"user": { 
+            "id": id5, "name": 'test2', "room":'testroom2', "avatar": '', "turn": false, "points": 0, "hadPoints": false 
+            }, "error": undefined
+        }
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+        assert.deepEqual(user['avatar'], '')
     })
 
     it('getUser', function() {
