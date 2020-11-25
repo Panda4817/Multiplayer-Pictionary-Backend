@@ -26,6 +26,7 @@ const longName = 'abcdefghijklm'
 const longRoom = 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstu'
 const invalidAvatar = 'qwerty'
 const otherHexCode = '123'
+const uncleanWord = 'asshole'
 
 describe('Custom functions test suite (with chai):', function() {
     it('addUser', function() {
@@ -89,6 +90,26 @@ describe('Custom functions test suite (with chai):', function() {
         // Act
         const {error, user} = addUser({ id:id6, name, room:'', avatar})
         const expectedOutput = {"user": undefined, "error": "Username and/or room name is empty"}
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+
+    })
+
+    it('addUser - unclean name fails', function() {
+        // Act
+        const {error, user} = addUser({ id4, name:uncleanWord, room, avatar})
+        const expectedOutput = {"user": undefined, "error": "Ensure username and/or room name is clean"}
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+
+    })
+
+    it('addUser - unclean room fails', function() {
+        // Act
+        const {error, user} = addUser({ id5, name, room:uncleanWord, avatar})
+        const expectedOutput = {"user": undefined, "error": "Ensure username and/or room name is clean"}
 
         // Assert
         assert.deepEqual({ user, error }, expectedOutput)

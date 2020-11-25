@@ -1,3 +1,5 @@
+const Filter = require('bad-words');
+const filter = new Filter();
 const users = []
 const emojiList = [
     "0x1F600",
@@ -396,6 +398,13 @@ const addUser = ({ id, name, room, avatar }) => {
 
     if (name === '' || room === ''){
         return { error: `Username and/or room name is empty`}
+    }
+
+    let cleanName = filter.clean(name)
+    let cleanRoom = filter.clean(room)
+
+    if (name !== cleanName || room !== cleanRoom) {
+        return { error: `Ensure username and/or room name is clean`}
     }
 
     const existingUser = users.find((user) => user.room === room && user.name === name)
