@@ -394,10 +394,14 @@ const addUser = ({ id, name, room, avatar }) => {
     name = name.trim().toLowerCase()
     room = room.trim().toLowerCase()
 
+    if (name === '' || room === ''){
+        return { error: `Username and/or room name is empty`}
+    }
+
     const existingUser = users.find((user) => user.room === room && user.name === name)
 
     if (existingUser) {
-        return { error: `Username ${name} is taken in room ${room}` }
+        return { error: `Username is taken in room ${room}` }
     }
 
     if (name.length > 12) {

@@ -18,6 +18,7 @@ const id2 = 456
 const id3 = 789
 const id4 = 101
 const id5 = 112
+const id6 = 134
 const name = 'Test '
 const name2 = 'Test2'
 const name3 = 'Test3'
@@ -68,7 +69,26 @@ describe('Custom functions test suite (with chai):', function() {
     it('addUser - same username fails', function() {
         // Act
         const {error, user} = addUser({ id:id4, name, room, avatar})
-        const expectedOutput = {"user": undefined, "error": "Username test is taken in room testroom"}
+        const expectedOutput = {"user": undefined, "error": "Username is taken in room testroom"}
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+
+    })
+
+    it('addUser - username empty fails', function() {
+        // Act
+        const {error, user} = addUser({ id:id5, name:'', room, avatar})
+        const expectedOutput = {"user": undefined, "error": "Username and/or room name is empty"}
+
+        // Assert
+        assert.deepEqual({ user, error }, expectedOutput)
+
+    })
+    it('addUser - room name empty fails', function() {
+        // Act
+        const {error, user} = addUser({ id:id6, name, room:'', avatar})
+        const expectedOutput = {"user": undefined, "error": "Username and/or room name is empty"}
 
         // Assert
         assert.deepEqual({ user, error }, expectedOutput)
