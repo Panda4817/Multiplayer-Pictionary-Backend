@@ -541,7 +541,7 @@ describe('Socket integration tests', function() {
             const received_word = getWord(room)
             assert.equal(received_word, word)
             done()
-        }, small_time)
+        }, medium_time)
     })
     
     it('emitDrawing event', function(done) {
@@ -567,7 +567,7 @@ describe('Socket integration tests', function() {
                 assert.deepEqual(lines[room], [data])
                 done()
             })  
-        }, small_time)
+        }, medium_time)
         
     })
 
