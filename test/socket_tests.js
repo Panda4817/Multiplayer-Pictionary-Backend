@@ -101,7 +101,7 @@ describe('Socket integration tests', function() {
                 assert.deepEqual(data2, users2)
                 done()
             })
-        }, small_time)
+        }, medium_time)
         
     })
 
@@ -145,7 +145,7 @@ describe('Socket integration tests', function() {
                 assert.deepEqual(data, { user: "admin", text: "Test has left! If they were drawing, wait for their turn to end to continue." })
                 done()
             })
-        }, small_time)
+        }, medium_time)
         
     })
 
