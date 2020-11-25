@@ -27,6 +27,7 @@ const longRoom = 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghij
 const invalidAvatar = 'qwerty'
 const otherHexCode = '123'
 const uncleanWord = 'asshole'
+const timeout = 20
 
 describe('Custom functions test suite (with chai):', function() {
     it('addUser', function() {
@@ -248,7 +249,7 @@ describe('Custom functions test suite (with chai):', function() {
             assert.equal(getUser(id)['points'], 0)
             assert.equal(getUser(id2)['points'], 0)
             assert.equal(getUser(id3)['points'], 0)
-        }, 10)
+        }, timeout)
         
 
     })
@@ -272,7 +273,7 @@ describe('Custom functions test suite (with chai):', function() {
             assert.equal(getUser(id2)['hadPoints'], false)
             assert.equal(getUser(id3)['hadPoints'], false)
 
-        }, 10)
+        }, timeout)
         
         
         
@@ -296,7 +297,7 @@ describe('Custom functions test suite (with chai):', function() {
             assert.equal(getUser(id)['turn'], false)
             assert.equal(getUser(id2)['turn'], false)
             assert.equal(getUser(id3)['turn'], false)
-        }, 10)
+        }, timeout)
         
     })
 
