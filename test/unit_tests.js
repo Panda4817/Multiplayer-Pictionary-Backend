@@ -350,13 +350,14 @@ describe('Custom functions test suite (with chai):', function() {
         assert.isString(actual['word3'])
     })
 
-    it('checkWord', function() {
+    it('checkWord - one part word', function() {
         // Act
         updateRoom(room, 'cat')
         const actual = checkWord('cat', room)
         const actual1 = checkWord('cat ', room)
         const actual2 = checkWord('CAT', room)
         const actual3 = checkWord('dog', room)
+        const actual4 = checkWord('asshole', room)
 
         // Assert
         assert.equal(actual, "Correct!")
@@ -364,6 +365,25 @@ describe('Custom functions test suite (with chai):', function() {
         assert.equal(actual2, "Correct!")
         assert.notEqual(actual3, "Correct!")
         assert.equal(actual3, "Not the word!\ndog")
+        assert.equal(actual4, "Not the word!\n*******")
+    })
+
+    it('checkWord - two part word', function() {
+        // Act
+        updateRoom(room, 'pine tree')
+        const actual = checkWord('pine tree ', room)
+        const actual1 = checkWord('pinetree ', room)
+        const actual2 = checkWord('PINE tree', room)
+        const actual3 = checkWord('pine', room)
+        const actual4 = checkWord('asshole', room)
+
+        // Assert
+        assert.equal(actual, "Correct!")
+        assert.equal(actual1, "Correct!")
+        assert.equal(actual2, "Correct!")
+        assert.notEqual(actual3, "Correct!")
+        assert.equal(actual3, "Not the word!\npine")
+        assert.equal(actual4, "Not the word!\n*******")
     })
 
     it('removeRoom', function() {

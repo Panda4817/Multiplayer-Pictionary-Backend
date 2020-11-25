@@ -1,3 +1,5 @@
+const Filter = require('bad-words');
+const filter = new Filter();
 current_word = {}
 previous_words = {}
 const fs = require("fs")
@@ -55,8 +57,19 @@ const checkWord = (message, room) => {
     var msg = ''
     const myWord = message.trim().toLowerCase()
     const word = getWord(room)
+    const parts = word.split(" ")
     if (word != myWord) {
-        msg = "Not the word!\n" + message
+        msg = "Not the word!\n" + filter.clean(message)
+        if (parts.length < 2) {
+            return msg
+        }
+        const msg_parts = myWord.split(parts[0])
+        if (msg_parts.length < 2) {
+            return msg
+        }
+        if (msg_parts[1] == parts[1]) {
+            msg = "Correct!"
+        }
     } else {
         msg = "Correct!"
     }

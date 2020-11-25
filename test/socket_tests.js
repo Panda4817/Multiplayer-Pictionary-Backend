@@ -165,6 +165,34 @@ describe('Socket integration tests', function() {
         
     })
 
+    it('join event, error thrown if room name is empty', function(done) {
+        // arrange
+        const socket = makeSocket()
+        // act and assert
+        const callback = (err) => {
+            console.log(err)
+            assert.notEqual(err, null)
+            assert.isString(err)
+            done()
+        }
+        socket.emit('join', { name: n1, room: '', avatar}, callback)
+        
+    })
+
+    it('join event, error thrown if username is empty', function(done) {
+        // arrange
+        const socket = makeSocket()
+        // act and assert
+        const callback = (err) => {
+            console.log(err)
+            assert.notEqual(err, null)
+            assert.isString(err)
+            done()
+        }
+        socket.emit('join', { name: '', room, avatar}, callback)
+        
+    })
+
     it('gameStart event - reset emitted', function(done) {
         // arrange
         const socket = makeSocket()
@@ -672,6 +700,48 @@ describe('Socket integration tests', function() {
             })
         }, medium_time)
     })
+
+    it('sendMessage event - filter bad word', function(done) {
+        // arrange
+        const socket = makeSocket()
+        const socket2 = makeSocket()
+        const word = 'testword'
+        const message1 = 'asshole'
+        const callback = () => {
+            console.log('test callback')
+        }
+        
+
+        // act and assert
+        socket.emit('join', { name: n1, room: room, avatar: avatar})
+        socket2.emit('join', { name: n2, room: room, avatar: avatar})
+        setTimeout(() => {
+            const users = getUsersInRoom(room)
+            assert.equal(users.length, 2)
+            addTotalScore(room)
+            socket.emit('chosenWord', {word, room})
+            currentArtist[room] = socket.id
+        }, small_time)
+        setTimeout(() => {
+            socket2.emit('sendMessage', message1, callback)
+            socket.on('message', (data) => {
+                console.log('msg sent to all users, client 1 tests')
+                assert.hasAllDeepKeys(data, ['user', 'text', 'img'])
+                assert.equal(data['user'], n2)
+                assert.equal(data['text'], 'Not the word!\n' + '*******')
+                assert.equal(data['img'], avatar)
+            })     
+            socket2.on('message', (data) => {
+                console.log('msg sent to all users, client 2 tests')
+                assert.hasAllDeepKeys(data, ['user', 'text', 'img'])
+                assert.equal(data['user'], n2)
+                assert.equal(data['text'], 'Not the word!\n' + '*******')
+                assert.equal(data['img'], avatar)
+                done()
+            })
+        }, medium_time)
+    })
+
 
     it('sendMessage event - right word', function(done) {
         // arrange
