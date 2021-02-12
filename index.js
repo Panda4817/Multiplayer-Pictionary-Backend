@@ -19,7 +19,7 @@ const app = express()
 app.use(cors())
 const server = http.createServer(app)
 const io = socketio(server, {
-    allowEIO3: true,
+    allowEIO3: false,
     cors: {
         origin: "https://picto.netlify.app", //"http://localhost:3000",
         methods: ["GET","PUT","POST","DELETE","OPTIONS"],
