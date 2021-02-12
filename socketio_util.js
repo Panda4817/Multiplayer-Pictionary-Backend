@@ -5,8 +5,8 @@ const { addTotalScore, reduceTotalScore, getTotalScore } = require('./score')
 
 
 // Standard times for choosing and drawing
-const choiceTime = process.env.TEST == 'true' ? 1000 : 5000
-const turnTime = process.env.TEST == 'true' ? 2000 : 36000
+const choiceTime = process.env.TEST == 'true' ? 2000 : 5000
+const turnTime = process.env.TEST == 'true' ? 5000 : 36000
 //Standard number of rounds
 const ROUND = process.env.TEST == 'true' ? 1 : 5
 

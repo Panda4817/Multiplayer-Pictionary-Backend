@@ -18,7 +18,15 @@ const router = require('./router')
 const app = express()
 app.use(cors())
 const server = http.createServer(app)
-const io = socketio(server)
+const io = socketio(server, {
+    allowEIO3: true,
+    cors: {
+        origin: "https://picto.netlify.app", //"http://localhost:3000",
+        methods: ["GET","PUT","POST","DELETE","OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
+        credentials: true
+    }
+})
 
 // socket events
 io.on('connection', (socket) => {
@@ -31,7 +39,8 @@ io.on('connection', (socket) => {
         let { error, user } = addUser({ id: socket.id, name, room, avatar })
         if (error) return callback(error)
 
-        socket.join(user.room).emit()
+        socket.join(user.room)
+        socket.emit()
         updatePlayers(socket, user.room)
         // Update player with line data if game has already started
         if (timers[room] != undefined) {
