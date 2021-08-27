@@ -20,24 +20,9 @@ const {
 	resetPlayerHadPoints,
 	resetPlayerTurns,
 } = require("./users");
-const {
-	chooseWord,
-	updateRoom,
-	getWord,
-	removeRoom,
-	checkWord,
-} = require("./words");
-const {
-	addRound,
-	increaseRound,
-	getRound,
-	whoseTurn,
-} = require("./turn");
-const {
-	addTotalScore,
-	reduceTotalScore,
-	getTotalScore,
-} = require("./score");
+const { chooseWord, updateRoom, getWord, removeRoom, checkWord } = require("./words");
+const { addRound, increaseRound, getRound, whoseTurn } = require("./turn");
+const { addTotalScore, reduceTotalScore, getTotalScore } = require("./score");
 const {
 	myClientList,
 	timers,
@@ -66,14 +51,9 @@ const server = http.createServer(app);
 const io = socketio(server, {
 	allowEIO3: false,
 	cors: {
-		origin: "https://picto.netlify.app", //"http://localhost:3000",
+		origin: process.env.CLIENT,
 		methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
-		allowedHeaders: [
-			"Content-Type",
-			"Authorization",
-			"Content-Length",
-			"X-Requested-With",
-		],
+		allowedHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
 		credentials: true,
 	},
 });
@@ -108,17 +88,13 @@ io.on("connection", (socket) => {
 			addTotalScore(room);
 			socket.emit("message", {
 				user: "admin",
-				text: "You have joined an existing game. The timer and round number will update in the next turn. You can guess now.",
+				text:
+					"You have joined an existing game. The timer and round number will update in the next turn. You can guess now.",
 			});
-			socket.broadcast
-				.to(room)
-				.emit("message", {
-					user: "admin",
-					text:
-						user.name[0].toUpperCase() +
-						user.name.slice(1) +
-						" has joined!",
-				});
+			socket.broadcast.to(room).emit("message", {
+				user: "admin",
+				text: user.name[0].toUpperCase() + user.name.slice(1) + " has joined!",
+			});
 		}
 	});
 
@@ -136,15 +112,9 @@ io.on("connection", (socket) => {
 	socket.on("gameStart", (room) => {
 		restartGame(room, socket);
 		turn(room, io);
-		console.log(
-			"start interval timer",
-			new Date().toLocaleTimeString()
-		);
+		console.log("start interval timer", new Date().toLocaleTimeString());
 		timers[room] = setInterval(() => {
-			console.log(
-				"interval timer completed",
-				new Date().toLocaleTimeString()
-			);
+			console.log("interval timer completed", new Date().toLocaleTimeString());
 			turn(room, io);
 		}, turnTime);
 	});
@@ -163,11 +133,7 @@ io.on("connection", (socket) => {
 	// send message event, emits whether guess was right or wrong to all players
 	socket.on("sendMessage", (message, callback) => {
 		const user = getUser(socket.id);
-		const text = updateMsgTextAndAddPoints(
-			socket,
-			user,
-			message
-		);
+		const text = updateMsgTextAndAddPoints(socket, user, message);
 		io.to(user.room).emit("message", {
 			user: user.name,
 			text: text,
@@ -197,14 +163,8 @@ io.on("connection", (socket) => {
 
 app.use(router);
 app.options("/*", function (req, res, next) {
-	res.header(
-		"Access-Control-Allow-Origin",
-		"https://picto.netlify.app"
-	);
-	res.header(
-		"Access-Control-Allow-Methods",
-		"GET,PUT,POST,DELETE,OPTIONS"
-	);
+	res.header("Access-Control-Allow-Origin", process.env.CLIENT);
+	res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
 	res.header(
 		"Access-Control-Allow-Headers",
 		"Content-Type, Authorization, Content-Length, X-Requested-With"
@@ -217,8 +177,6 @@ app.all("*", function (req, res, next) {
 	next();
 });
 
-server.listen(PORT, () =>
-	console.log(`Server has started on port ${PORT}`)
-);
+server.listen(PORT, () => console.log(`Server has started on port ${PORT}`));
 
 module.exports = { server };
