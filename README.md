@@ -7,15 +7,16 @@ Made using NodeJS and Express server.
 
 ## Requirements
 - "bad-words": "^3.0.4",
-- "chai": "^4.2.0",
+- "chai": "^4.3.4",
 - "chai-http": "^4.3.0",
 - "cors": "^2.8.5",
 - "dotenv": "^8.2.0",
 - "express": "^4.17.1",
-- "mocha": "^8.2.1",
-- "nodemon": "^2.0.6",
-- "socket.io": "^2.3.0",
-- "socket.io-client": "^2.3.0"
+- "mocha": "^8.3.2",
+- "nodemon": "^2.0.7",
+- "socket.io": "^4.0.1",
+- "socket.io-client": "^4.0.1"
+- "nyc": "^15.1.0"
 
 ## Usage
 ### Run `npm start`
@@ -25,4 +26,4 @@ Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
 Make sure frontend is also started. Repo to frontend is [Multiplayer-Pictionary-Frontend](https://github.com/Panda4817/Multiplayer-Pictionary-Frontend).
 
 ### Run `npm test`
-Runs the unit tests and functional tests found in tests directory.
+Runs the unit tests and functional/ integration tests found in tests directory. Requires nyc npm package to gather coverage.

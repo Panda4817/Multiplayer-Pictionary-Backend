@@ -1,25 +1,28 @@
 {
-  "name": "server",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "test": "node ./node_modules/mocha/bin/mocha"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "bad-words": "^3.0.4",
-    "chai": "^4.3.4",
-    "chai-http": "^4.3.0",
-    "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
-    "express": "^4.17.1",
-    "mocha": "^8.3.2",
-    "nodemon": "^2.0.7",
-    "socket.io": "^4.0.1",
-    "socket.io-client": "^4.0.1"
-  }
+	"name": "server",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node index.js",
+		"test": "nyc --reporter=text mocha"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"bad-words": "^3.0.4",
+		"chai": "^4.3.4",
+		"chai-http": "^4.3.0",
+		"cors": "^2.8.5",
+		"dotenv": "^8.2.0",
+		"express": "^4.17.1",
+		"mocha": "^8.3.2",
+		"nodemon": "^2.0.7",
+		"socket.io": "^4.0.1",
+		"socket.io-client": "^4.0.1"
+	},
+	"devDependencies": {
+		"nyc": "^15.1.0"
+	}
 }
