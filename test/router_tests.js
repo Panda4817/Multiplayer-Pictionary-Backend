@@ -12,7 +12,6 @@ describe("Router Integration tests", function () {
 			.end(function (err, res) {
 				assert.equal(res.status, 200);
 				assert.equal(res.text, "Server is up and running");
-				assert.equal(res.header["access-control-allow-origin"], process.env.CLIENT);
 				assert.equal(res.header["content-length"], "24");
 				assert.equal(res.header["x-powered-by"], "Express");
 				assert.equal(res.header["content-type"], "text/html; charset=utf-8");
@@ -27,7 +26,6 @@ describe("Router Integration tests", function () {
 			.end(function (err, res) {
 				assert.equal(res.status, 200);
 				assert.equal(res.type, "application/json");
-				assert.equal(res.header["access-control-allow-origin"], process.env.CLIENT);
 				assert.equal(res.header["x-powered-by"], "Express");
 				assert.hasAllDeepKeys(res.body, ["room"]);
 				assert.isString(res.body["room"]);
