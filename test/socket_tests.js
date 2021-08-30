@@ -112,7 +112,21 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		console.log(room);
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket.on("updateUsers", (data) => {
+			const users = getUsersInRoom(room);
+			assert.equal(users.length, 1);
+			assert.deepEqual(data, users);
+			done();
+		});
+	});
+
+	it("join event via update", function (done) {
+		// arrange
+		const socket = makeSocket();
+		console.log(room);
+		// act and assert
+		socket.emit("join", { name: n1, room, avatar, update: true });
 		socket.on("updateUsers", (data) => {
 			const users = getUsersInRoom(room);
 			assert.equal(users.length, 1);
@@ -126,9 +140,9 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
 		setTimeout(() => {
-			socket2.emit("join", { name: n2, room, avatar });
+			socket2.emit("join", { name: n2, room, avatar, update: false });
 			socket.on("updateUsers", (data2) => {
 				console.log("client1 receives updated list");
 				const users2 = getUsersInRoom(room);
@@ -150,8 +164,8 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		setTimeout(() => {
 			socket.disconnect();
 			socket2.on("waitingTrue", () => {
@@ -168,9 +182,9 @@ describe("Socket integration tests", function () {
 		const socket2 = makeSocket();
 		const socket3 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
-		socket3.emit("join", { name: n3, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
+		socket3.emit("join", { name: n3, room, avatar, update: false });
 		setTimeout(() => {
 			socket.disconnect();
 			socket2.on("message", (data) => {
@@ -198,7 +212,7 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
 		const callback = (err) => {
 			console.log(err);
 			assert.notEqual(err, null);
@@ -218,7 +232,7 @@ describe("Socket integration tests", function () {
 			assert.isString(err);
 			done();
 		};
-		socket.emit("join", { name: n1, room: "", avatar }, callback);
+		socket.emit("join", { name: n1, room: "", avatar, update: false }, callback);
 	});
 
 	it("join event, error thrown if username is empty", function (done) {
@@ -231,7 +245,7 @@ describe("Socket integration tests", function () {
 			assert.isString(err);
 			done();
 		};
-		socket.emit("join", { name: "", room, avatar }, callback);
+		socket.emit("join", { name: "", room, avatar, update: false }, callback);
 	});
 
 	it("gameStart event - reset emitted", function (done) {
@@ -239,8 +253,8 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket2.emit("gameStart", room);
 		socket.on("reset", () => {
 			console.log("reset emitted to other players");
@@ -255,8 +269,8 @@ describe("Socket integration tests", function () {
 		const socket2 = makeSocket();
 		updateRoom(room, "testword");
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		setTimeout(() => {
 			socket2.emit("gameStart", room);
 			socket2.on("message", (data) => {
@@ -272,12 +286,13 @@ describe("Socket integration tests", function () {
 	});
 
 	it("gameStart event - choice event emitted", function (done) {
+		this.timeout(5000);
 		// arrange
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		setTimeout(() => {
 			socket2.emit("gameStart", room);
 			socket.on("choice", (data) => {
@@ -289,26 +304,17 @@ describe("Socket integration tests", function () {
 				assert.deepEqual(lines[room], []);
 				done();
 			});
-
-			socket2.on("choice", (data) => {
-				console.log(typeof data, " sent to client 2");
-				assert.hasAllDeepKeys(data, ["chosen", "word1", "word2", "word3", "round"]);
-				assert.equal(getTotalScore(room), 2);
-				assert.isTrue(getUser(socket2.id)["turn"]);
-				assert.equal(currentArtist[room], socket2.id);
-				assert.deepEqual(lines[room], []);
-				done();
-			});
-		}, small_time);
+		}, choiceTime + small_time);
 	});
 
 	it("gameStart event - choosing event emitted", function (done) {
+		this.timeout(5000);
 		// arrange
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 
 		setTimeout(() => {
 			socket2.emit("gameStart", room);
@@ -321,16 +327,7 @@ describe("Socket integration tests", function () {
 				assert.deepEqual(lines[room], []);
 				done();
 			});
-			socket2.on("choosing", (data) => {
-				console.log(typeof data, " sent to client 2");
-				assert.hasAllDeepKeys(data, ["chosen", "round"]);
-				assert.equal(getTotalScore(room), 2);
-				assert.isTrue(getUser(socket.id)["turn"]);
-				assert.equal(currentArtist[room], socket.id);
-				assert.deepEqual(lines[room], []);
-				done();
-			});
-		}, small_time);
+		}, choiceTime + small_time);
 	});
 
 	it("gameStart event - myturn event emitted", function (done) {
@@ -339,8 +336,8 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 
 		setTimeout(() => {
 			socket2.emit("gameStart", room);
@@ -355,15 +352,6 @@ describe("Socket integration tests", function () {
 				assert.deepEqual(lines[room], []);
 				done();
 			});
-			socket2.on("myturn", (data) => {
-				console.log(typeof data, " sent to client 2");
-				assert.hasAllDeepKeys(data, ["chosen", "word", "round"]);
-				assert.equal(getTotalScore(room), 2);
-				assert.isTrue(getUser(socket2.id)["turn"]);
-				assert.equal(currentArtist[room], socket2.id);
-				assert.deepEqual(lines[room], []);
-				done();
-			});
 		}, choiceTime + small_time);
 	});
 
@@ -373,8 +361,8 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 
 		setTimeout(() => {
 			socket2.emit("gameStart", room);
@@ -389,15 +377,6 @@ describe("Socket integration tests", function () {
 				assert.deepEqual(lines[room], []);
 				done();
 			});
-			socket2.on("turn", (data) => {
-				console.log(typeof data, " sent to client 2");
-				assert.hasAllDeepKeys(data, ["chosen", "round"]);
-				assert.equal(getTotalScore(room), 2);
-				assert.isTrue(getUser(socket.id)["turn"]);
-				assert.equal(currentArtist[room], socket.id);
-				assert.deepEqual(lines[room], []);
-				done();
-			});
 		}, choiceTime + small_time);
 	});
 
@@ -407,8 +386,8 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 
 		setTimeout(() => {
 			socket2.emit("gameStart", room);
@@ -432,8 +411,8 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		setTimeout(() => {
 			socket2.emit("gameStart", room);
 			socket.on("spinner", () => {
@@ -454,8 +433,8 @@ describe("Socket integration tests", function () {
 		const socket = makeSocket();
 		const socket2 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket2.emit("gameStart", room);
 		setTimeout(() => {
 			socket.on("gameOver", () => {
@@ -476,11 +455,11 @@ describe("Socket integration tests", function () {
 		const socket2 = makeSocket();
 		const socket3 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket2.emit("gameStart", room);
 		setTimeout(() => {
-			socket3.emit("join", { name: n3, room, avatar });
+			socket3.emit("join", { name: n3, room, avatar, update: false });
 			socket3.on("waitingFalse", () => {
 				console.log("waiting is false so taken straight to game");
 				const totalScore = addTotalScore(room);
@@ -505,14 +484,14 @@ describe("Socket integration tests", function () {
 		};
 
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket2.emit("gameStart", room);
 		setTimeout(() => {
 			lines[room] = [data];
 		}, small_time);
 		setTimeout(() => {
-			socket3.emit("join", { name: n3, room, avatar });
+			socket3.emit("join", { name: n3, room, avatar, update: false });
 			assert.deepEqual(lines[room], [data]);
 			socket3.on("draw_line", (sent_data) => {
 				console.log("line history data emitted");
@@ -528,11 +507,11 @@ describe("Socket integration tests", function () {
 		const socket2 = makeSocket();
 		const socket3 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket2.emit("gameStart", room);
 		setTimeout(() => {
-			socket3.emit("join", { name: n3, room, avatar });
+			socket3.emit("join", { name: n3, room, avatar, update: false });
 
 			socket3.on("message", (obj) => {
 				console.log("admin sends message to connected user");
@@ -552,12 +531,12 @@ describe("Socket integration tests", function () {
 		const socket2 = makeSocket();
 		const socket3 = makeSocket();
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket2.emit("gameStart", room);
 
 		setTimeout(() => {
-			socket3.emit("join", { name: n3, room, avatar });
+			socket3.emit("join", { name: n3, room, avatar, update: false });
 			socket.on("message", (obj2) => {
 				console.log("admin sends message to all other users client 1 test");
 				assert.equal(obj2["text"], "Test3 has joined!");
@@ -579,14 +558,14 @@ describe("Socket integration tests", function () {
 		const socket3 = makeSocket();
 
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket2.emit("gameStart", room);
 		setTimeout(() => {
 			lines[room] = undefined;
 		}, small_time);
 		setTimeout(() => {
-			socket3.emit("join", { name: n3, room, avatar });
+			socket3.emit("join", { name: n3, room, avatar, update: false });
 			assert.deepEqual(lines[room], undefined);
 			done();
 		}, medium_time);
@@ -598,8 +577,8 @@ describe("Socket integration tests", function () {
 		const socket2 = makeSocket();
 
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 
 		setTimeout(() => {
 			socket.emit("changeWaiting", room);
@@ -617,7 +596,7 @@ describe("Socket integration tests", function () {
 		const word = "testword";
 
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
 		socket.emit("chosenWord", { word, room });
 
 		setTimeout(() => {
@@ -640,8 +619,8 @@ describe("Socket integration tests", function () {
 			l: 5,
 		};
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		assert.equal(lines[room], undefined);
 		setTimeout(() => {
 			socket.emit("emitDrawing", { data, room });
@@ -666,8 +645,8 @@ describe("Socket integration tests", function () {
 			l: 5,
 		};
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		assert.equal(lines[room], undefined);
 		socket.emit("emitDrawing", { data, room });
 		setTimeout(() => {
@@ -696,8 +675,8 @@ describe("Socket integration tests", function () {
 			l: 5,
 		};
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		socket.emit("emitDrawing", { data, room });
 		setTimeout(() => {
 			assert.equal(lines[room].length, 1);
@@ -725,8 +704,8 @@ describe("Socket integration tests", function () {
 		};
 		lines[room] = [];
 		// act and assert
-		socket.emit("join", { name: n1, room, avatar });
-		socket2.emit("join", { name: n2, room, avatar });
+		socket.emit("join", { name: n1, room, avatar, update: false });
+		socket2.emit("join", { name: n2, room, avatar, update: false });
 		for (let i = 0; i < 11; i++) {
 			lines[room].push(data);
 			assert.equal(lines[room].length, i + 1);
@@ -753,8 +732,8 @@ describe("Socket integration tests", function () {
 		};
 
 		// act and assert
-		socket.emit("join", { name: n1, room: room, avatar: avatar });
-		socket2.emit("join", { name: n2, room: room, avatar: avatar });
+		socket.emit("join", { name: n1, room: room, avatar: avatar, update: false });
+		socket2.emit("join", { name: n2, room: room, avatar: avatar, update: false });
 		setTimeout(() => {
 			const users = getUsersInRoom(room);
 			assert.equal(users.length, 2);
@@ -793,8 +772,8 @@ describe("Socket integration tests", function () {
 		};
 
 		// act and assert
-		socket.emit("join", { name: n1, room: room, avatar: avatar });
-		socket2.emit("join", { name: n2, room: room, avatar: avatar });
+		socket.emit("join", { name: n1, room: room, avatar: avatar, update: false });
+		socket2.emit("join", { name: n2, room: room, avatar: avatar, update: false });
 		setTimeout(() => {
 			const users = getUsersInRoom(room);
 			assert.equal(users.length, 2);
@@ -832,8 +811,8 @@ describe("Socket integration tests", function () {
 		};
 
 		// act and assert
-		socket.emit("join", { name: n1, room: room, avatar: avatar });
-		socket2.emit("join", { name: n2, room: room, avatar: avatar });
+		socket.emit("join", { name: n1, room: room, avatar: avatar, update: false });
+		socket2.emit("join", { name: n2, room: room, avatar: avatar, update: false });
 		setTimeout(() => {
 			const users = getUsersInRoom(room);
 			assert.equal(users.length, 2);
@@ -881,8 +860,8 @@ describe("Socket integration tests", function () {
 		};
 
 		// act and assert
-		socket.emit("join", { name: n1, room: room, avatar: avatar });
-		socket2.emit("join", { name: n2, room: room, avatar: avatar });
+		socket.emit("join", { name: n1, room: room, avatar: avatar, update: false });
+		socket2.emit("join", { name: n2, room: room, avatar: avatar, update: false });
 		setTimeout(() => {
 			const users = getUsersInRoom(room);
 			assert.equal(users.length, 2);

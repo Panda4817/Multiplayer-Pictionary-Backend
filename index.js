@@ -8,6 +8,7 @@ const http = require("http");
 // My custom modules and their functions imported
 const {
 	addUser,
+	updateUser,
 	removeUser,
 	getUser,
 	getUsersInRoom,
@@ -65,18 +66,32 @@ io.on("connection", (socket) => {
 	myClientList[socket.id] = socket;
 
 	// Join event to handle new players joining
-	socket.on("join", ({ name, room, avatar }, callback) => {
-		let { error, user } = addUser({
-			id: socket.id,
-			name,
-			room,
-			avatar,
-		});
-		if (error) return callback(error);
+	socket.on("join", ({ name, room, avatar, update }, callback) => {
+		if (update) {
+			var { error, user } = updateUser({
+				id: socket.id,
+				name,
+				room,
+				avatar,
+				update,
+			});
+		} else {
+			var { error, user } = addUser({
+				id: socket.id,
+				name,
+				room,
+				avatar,
+				update,
+			});
+		}
 
+		if (error) return callback(error);
 		socket.join(user.room);
 		socket.emit();
 		updatePlayers(socket, user.room);
+		if (update) {
+			socket.emit("closeModal");
+		}
 		// Update player with line data if game has already started
 		if (timers[room] != undefined) {
 			socket.emit("waitingFalse");

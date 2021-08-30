@@ -4,6 +4,7 @@ const assert = chai.assert;
 // My custom modules and their functions imported
 const {
 	addUser,
+	updateUser,
 	removeUser,
 	getUser,
 	getUsersInRoom,
@@ -24,6 +25,7 @@ const { addTotalScore, reduceTotalScore, getTotalScore } = require("../score");
 const room = "testroom";
 const room_addUser = "TestRoom ";
 const room2 = "testroom2";
+const room3 = "testroom3";
 const avatar = "0x1F600";
 const id = 123;
 const id2 = 456;
@@ -31,6 +33,11 @@ const id3 = 789;
 const id4 = 101;
 const id5 = 112;
 const id6 = 134;
+const id7 = 124;
+const id8 = 457;
+const id9 = 790;
+const id10 = 102;
+const id11 = 113;
 const name = "Test ";
 const name2 = "Test2";
 const name3 = "Test3";
@@ -160,6 +167,147 @@ describe("Custom functions test suite (with chai):", function () {
 				id: id5,
 				name: "test2",
 				room: "testroom2",
+				avatar: "",
+				turn: false,
+				points: 0,
+				hadPoints: false,
+			},
+			error: undefined,
+		};
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+		assert.deepEqual(user["avatar"], "");
+	});
+
+	it("updateUser", function () {
+		// Arrange
+		let expectedName = "test";
+		let expectedRoom = room3;
+
+		// Act
+		const expectedOutput = {
+			user: {
+				id: id7,
+				name: expectedName,
+				room: expectedRoom,
+				avatar: avatar,
+				turn: false,
+				points: 0,
+				hadPoints: false,
+			},
+			error: undefined,
+		};
+		const { error, user } = updateUser({ id: id7, name, room: room3, avatar });
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+		assert.equal(user["name"], expectedOutput["user"]["name"]);
+		assert.equal(user["room"], expectedOutput["user"]["room"]);
+	});
+
+	it("updateUser - long name fails", function () {
+		// Act
+		const { error, user } = updateUser({ id: id8, name: longName, room, avatar });
+		const expectedOutput = { user: undefined, error: "Username is too long (max 12 characters)" };
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+
+	it("updateUser - long room fails", function () {
+		// Act
+		const { error, user } = updateUser({ id: id9, name: name2, room: longRoom, avatar });
+		const expectedOutput = {
+			user: undefined,
+			error: "Room name cannot be updated in the waiting room (Close the window and join a new room)",
+		};
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+
+	it("updateUser - same username fails", function () {
+		// Act
+		const { error, user } = updateUser({ id: id10, name, room, avatar });
+		const expectedOutput = { user: undefined, error: "Username is taken in room testroom" };
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+
+	it("updateUser - username empty fails", function () {
+		// Act
+		const { error, user } = updateUser({ id: id11, name: "", room, avatar });
+		const expectedOutput = { user: undefined, error: "Username is empty" };
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+	it("updateUser - room name empty fails", function () {
+		// Act
+		const { error, user } = updateUser({ id: id8, name: "name", room: "", avatar });
+		const expectedOutput = {
+			user: undefined,
+			error: "Room name cannot be updated in the waiting room (Close the window and join a new room)",
+		};
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+
+	it("updateUser - unclean name fails", function () {
+		// Act
+		const { error, user } = updateUser({ id: id9, name: uncleanWord, room, avatar });
+		const expectedOutput = { user: undefined, error: "Ensure username and/or room name is clean" };
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+
+	it("updateUser - unclean room fails", function () {
+		// Act
+		const { error, user } = updateUser({ id: id10, name, room: uncleanWord, avatar });
+		const expectedOutput = { user: undefined, error: "Ensure username and/or room name is clean" };
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+
+	it("updateUser - invalid hexcode results in invisible avatar", function () {
+		// Act
+		const { error, user } = updateUser({
+			id: id11,
+			name: "name",
+			room: room3,
+			avatar: invalidAvatar,
+		});
+		const expectedOutput = {
+			user: {
+				id: id11,
+				name: "name",
+				room: "testroom3",
+				avatar: "",
+				turn: false,
+				points: 0,
+				hadPoints: false,
+			},
+			error: undefined,
+		};
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+		assert.deepEqual(user["avatar"], "");
+	});
+
+	it("updateUser - a hexcode not in the array results in invisible avatar", function () {
+		// Act
+		const { error, user } = updateUser({ id: id8, name: name2, room: room3, avatar: otherHexCode });
+		const expectedOutput = {
+			user: {
+				id: id8,
+				name: "test2",
+				room: "testroom3",
 				avatar: "",
 				turn: false,
 				points: 0,
