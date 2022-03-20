@@ -49,10 +49,17 @@ const router = require("./router");
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
+const whitelist = [...process.env.CLIENT.split(",")]
 const io = socketio(server, {
 	allowEIO3: false,
 	cors: {
-		origin: [...process.env.CLIENT.split(",")],
+		origin: (origin, callback) => {
+			if (whitelist.indexOf(origin) !== -1) {
+				callback(null, true)
+			} else {
+				callback(new Error('Not allowed by CORS'))
+			}
+		},
 		methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
 		credentials: true,
