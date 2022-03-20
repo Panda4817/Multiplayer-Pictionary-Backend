@@ -52,7 +52,7 @@ const server = http.createServer(app);
 const io = socketio(server, {
 	allowEIO3: false,
 	cors: {
-		origin: process.env.CLIENT.split(","),
+		origin: [...process.env.CLIENT.split(",")],
 		methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
 		credentials: true,
