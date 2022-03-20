@@ -2,7 +2,7 @@ const chai = require("chai");
 const assert = chai.assert;
 const { server, io } = require("../index");
 const io_client = require("socket.io-client");
-const socketURL = "http://localhost:5000";
+const socketURL = "http://localhost:5001";
 const options = {
 	transports: ["websocket"],
 	forceNew: true,
@@ -59,7 +59,7 @@ describe("Socket integration tests", function () {
 	beforeEach(() => {
 		sockets = [];
 		room = randomRoomName();
-		server.listen(5000);
+		server.listen(5001);
 	});
 	afterEach(() => {
 		sockets.forEach((e) => e.disconnect());

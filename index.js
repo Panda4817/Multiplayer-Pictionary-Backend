@@ -2,7 +2,6 @@
 require("dotenv").config();
 const express = require("express");
 const socketio = require("socket.io");
-const cors = require("cors");
 const http = require("http");
 const { corsOptions } = require("./cors");
 
@@ -45,19 +44,13 @@ const {
 } = require("./socketio_util");
 
 // App set up
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const router = require("./router");
 const app = express();
-app.use(cors());
 const server = http.createServer(app);
 const io = socketio(server, {
 	allowEIO3: false,
-	cors: {
-		origin: corsOptions.origin,
-		methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
-		allowedHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
-		credentials: true,
-	},
+	cors: corsOptions
 });
 
 // socket events
