@@ -4,6 +4,7 @@ const express = require("express");
 const socketio = require("socket.io");
 const cors = require("cors");
 const http = require("http");
+const { corsOptions } = require("./cors");
 
 // My custom modules and their functions imported
 const {
@@ -49,17 +50,10 @@ const router = require("./router");
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
-const whitelist = [...process.env.CLIENT.split(",")]
 const io = socketio(server, {
 	allowEIO3: false,
 	cors: {
-		origin: (origin, callback) => {
-			if (whitelist.indexOf(origin) !== -1) {
-				callback(null, true)
-			} else {
-				callback(new Error('Not allowed by CORS'))
-			}
-		},
+		origin: corsOptions.origin,
 		methods: ["GET", "PUT", "POST", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"],
 		credentials: true,
