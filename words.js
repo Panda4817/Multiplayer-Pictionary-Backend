@@ -3,6 +3,7 @@ const filter = new Filter();
 current_word = {}
 previous_words = {}
 const fs = require("fs")
+const {sendWordMessage} = require("./kafka");
 
 // Function to choose 3 words from the noun list
 const chooseWord = (round, room) => {
@@ -30,6 +31,7 @@ const chooseWord = (round, room) => {
 
 // Function to update current word for room
 const updateRoom = (room, word) => {
+    sendWordMessage(word).then(console.log).catch((e) => console.log(e.message));
     current_word[room] = word
     // Keep track of previous words so all new words are provided for the duration of the room
     if (previous_words[room]) {
