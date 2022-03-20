@@ -1,7 +1,8 @@
 const { Kafka } = require('kafkajs');
 
-const test = process.env.TEST;
- 
+const test = process.env.TEST == "true" ? true : false;
+
+// If test mode is true, don't send anything to kafka cluster
 const kafka = new Kafka({
   brokers: [test ? "" : process.env.KAFKA_URL],
   sasl: {
