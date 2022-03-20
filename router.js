@@ -4,7 +4,7 @@ const fs = require("fs");
 
 // back end index page
 router.get("/", (req, res) => {
-	res.header("Access-Control-Allow-Origin", process.env.CLIENT);
+	// res.header("Access-Control-Allow-Origin", process.env.CLIENT);
 	res.send("Server is up and running");
 });
 
@@ -15,7 +15,7 @@ router.get("/room", (req, res) => {
 	for (let i = 0; i < 3; i++) {
 		words.push(text[Math.floor(Math.random() * text.length)]);
 	}
-	res.header("Access-Control-Allow-Origin", process.env.CLIENT);
+	// res.header("Access-Control-Allow-Origin", process.env.CLIENT);
 	res.json({ room: words.join("-") });
 });
 
