@@ -6,6 +6,7 @@ The backend for a web application that lets you play pictionary with your friend
 Made using NodeJS and Express server.
 
 ## Requirements
+- Node version 17
 - "bad-words": "^3.0.4",
 - "chai": "^4.3.4",
 - "chai-http": "^4.3.0",
