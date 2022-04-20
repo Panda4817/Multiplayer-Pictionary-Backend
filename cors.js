@@ -1,4 +1,4 @@
-const whitelist = [...process.env.CLIENT.split(",")]
+const whitelist = process.env.CLIENT.split(",");
 const corsOptions = {
     origin: function (origin, callback) {
         if (whitelist.indexOf(origin) !== -1 || !origin) {

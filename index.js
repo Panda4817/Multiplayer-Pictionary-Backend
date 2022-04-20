@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const socketio = require("socket.io");
 const http = require("http");
-const { corsOptions } = require("./cors");
+const customCors = require("./cors");
 
 // My custom modules and their functions imported
 const {
@@ -50,7 +50,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server, {
 	allowEIO3: false,
-	cors: corsOptions
+	cors: customCors.corsOptions
 });
 
 // socket events
