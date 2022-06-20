@@ -28,7 +28,21 @@ const sendWordMessage = async (word) => {
     await producer.disconnect()
     return true;
 }
+
+// Send room name and number of people in room
+const sendRoomStats = async (name, count) => {
+  await producer.connect()
+  await producer.send({
+      topic: 'logs',
+      messages: [
+          { key: "room", name: name, count: count },
+      ],
+  }).then(console.log).catch(e => console.error(e.message));
+  await producer.disconnect()
+  return true;
+}
  
 module.exports = {
-   sendWordMessage
+   sendWordMessage,
+   sendRoomStats
 }
