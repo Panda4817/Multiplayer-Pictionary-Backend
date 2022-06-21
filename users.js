@@ -400,8 +400,15 @@ const addUser = ({ id, name, room, avatar }) => {
 		return { error: `Username and/or room name is empty` };
 	}
 
-	let cleanName = filter.clean(name);
-	let cleanRoom = filter.clean(room);
+	const sanitizedName = name.replace(/[^A-Za-z0-9]/g,"");
+	const sanitizedRoom = room.replace(/[^A-Za-z0-9-]/g,"");
+
+	if (sanitizedName !== name || sanitizedRoom !== room) {
+		return { error: `Username and/or room name contain invalid characters` };
+	}
+
+	const cleanName = filter.clean(sanitizedName);
+	const cleanRoom = filter.clean(sanitizedRoom);
 
 	if (name !== cleanName || room !== cleanRoom) {
 		return { error: `Ensure username and/or room name is clean` };

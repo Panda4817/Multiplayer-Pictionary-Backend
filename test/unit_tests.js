@@ -111,10 +111,26 @@ describe("Custom functions test suite (with chai):", function () {
 		// Assert
 		assert.deepEqual({ user, error }, expectedOutput);
 	});
+	it("addUser - username invalid", function () {
+		// Act
+		const { error, user } = addUser({ id: id5, name: "?!*(", room, avatar });
+		const expectedOutput = { user: undefined, error: "Username and/or room name contain invalid characters" };
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
 	it("addUser - room name empty fails", function () {
 		// Act
 		const { error, user } = addUser({ id: id6, name, room: "", avatar });
 		const expectedOutput = { user: undefined, error: "Username and/or room name is empty" };
+
+		// Assert
+		assert.deepEqual({ user, error }, expectedOutput);
+	});
+	it("addUser - room name invalid", function () {
+		// Act
+		const { error, user } = addUser({ id: id6, name, room: "?!(*&", avatar });
+		const expectedOutput = { user: undefined, error: "Username and/or room name contain invalid characters" };
 
 		// Assert
 		assert.deepEqual({ user, error }, expectedOutput);

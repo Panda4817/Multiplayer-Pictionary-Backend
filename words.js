@@ -57,7 +57,7 @@ const removeRoom = (room) => {
 // Function to check message against room word to check if it has been guessed right
 const checkWord = (message, room) => {
     var msg = ''
-    const sanitizedMessage = message.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?+]/g,"")
+    const sanitizedMessage = message.replace(/[^A-Za-z]/g,"")
     const myWord = sanitizedMessage.trim().toLowerCase()
     const word = getWord(room)
     const parts = word.split(" ")
