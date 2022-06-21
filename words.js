@@ -57,11 +57,12 @@ const removeRoom = (room) => {
 // Function to check message against room word to check if it has been guessed right
 const checkWord = (message, room) => {
     var msg = ''
-    const myWord = message.trim().toLowerCase()
+    const sanitizedMessage = message.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?+]/g,"")
+    const myWord = sanitizedMessage.trim().toLowerCase()
     const word = getWord(room)
     const parts = word.split(" ")
     if (word != myWord) {
-        msg = "Not the word!\n" + filter.clean(message)
+        msg = sanitizedMessage === "" ? "Not the word!\n" + message : "Not the word!\n" + filter.clean(sanitizedMessage)
         if (parts.length > 1) {
             const msg_parts = myWord.split(parts[0])
             if (msg_parts.length < 2) {

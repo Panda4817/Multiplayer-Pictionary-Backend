@@ -546,6 +546,7 @@ describe("Custom functions test suite (with chai):", function () {
 		const actual3 = checkWord("dog", room);
 		const actual4 = checkWord("asshole", room);
 		const actual5 = checkWord("cat nip", room);
+		const actual6 = checkWord("catnip?", room);
 
 		// Assert
 		assert.equal(actual, "Correct!");
@@ -555,6 +556,7 @@ describe("Custom functions test suite (with chai):", function () {
 		assert.equal(actual3, "Not the word!\ndog");
 		assert.equal(actual4, "Not the word!\n*******");
 		assert.equal(actual5, "Correct!");
+		assert.equal(actual6, "Correct!");
 	});
 
 	it("checkWord - two part word", function () {
@@ -565,6 +567,8 @@ describe("Custom functions test suite (with chai):", function () {
 		const actual2 = checkWord("PINE tree", room);
 		const actual3 = checkWord("pine", room);
 		const actual4 = checkWord("asshole", room);
+		const actual5 = checkWord("?!*(", room);
+		const actual6 = checkWord("pine-tree", room);
 
 		// Assert
 		assert.equal(actual, "Correct!");
@@ -573,6 +577,8 @@ describe("Custom functions test suite (with chai):", function () {
 		assert.notEqual(actual3, "Correct!");
 		assert.equal(actual3, "Not the word!\npine");
 		assert.equal(actual4, "Not the word!\n*******");
+		assert.equal(actual5, "Not the word!\n?!*(");
+		assert.equal(actual6, "Correct!");
 	});
 
 	it("removeRoom", function () {
