@@ -50,8 +50,8 @@ const avatar = "0x1F600";
 const n1 = "test";
 const n2 = "test2";
 const n3 = "test3";
-const small_time = 30;
-const medium_time = 50;
+const small_time = 40;
+const medium_time = 60;
 
 describe("Socket integration tests", function () {
 	let sockets;

@@ -35,7 +35,7 @@ const sendRoomStats = async (name, count) => {
   await producer.send({
       topic: 'logs',
       messages: [
-          { key: "room", value: {name: name, count: count} },
+          { key: "room", value: `${name} ${count}` },
       ],
   }).then(console.log).catch(e => console.error(e.message));
   await producer.disconnect()
