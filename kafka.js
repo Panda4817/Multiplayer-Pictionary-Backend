@@ -29,13 +29,13 @@ const sendWordMessage = async (word) => {
     return true;
 }
 
-// Send room name and number of people in room
-const sendRoomStats = async (name, count) => {
+// Send number of people in room
+const sendRoomStats = async (count) => {
   await producer.connect()
   await producer.send({
       topic: 'logs',
       messages: [
-          { key: "room", value: `${name} ${count}` },
+          { key: "room", value: `${count}` },
       ],
   }).then(console.log).catch(e => console.error(e.message));
   await producer.disconnect()

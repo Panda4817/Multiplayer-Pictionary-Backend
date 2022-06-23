@@ -10,22 +10,11 @@ const options = {
 
 // My custom modules and their functions imported
 const {
-	addUser,
-	removeUser,
 	getUser,
 	getUsersInRoom,
-	changeTurn,
-	addPoint,
-	resetPoint,
-	changeHadPoints,
-	resetHadPoints,
-	resetPoints,
-	resetPlayerHadPoints,
-	resetPlayerTurns,
 } = require("../users");
-const { chooseWord, updateRoom, getWord, removeRoom, checkWord } = require("../words");
-const { addRound, increaseRound, getRound, whoseTurn } = require("../turn");
-const { addTotalScore, reduceTotalScore, getTotalScore } = require("../score");
+const { updateRoom, getWord } = require("../words");
+const { addTotalScore, getTotalScore } = require("../score");
 const {
 	myClientList,
 	timers,
@@ -33,16 +22,10 @@ const {
 	currentArtist,
 	choiceTime,
 	turnTime,
-	ROUND,
-	updatePlayers,
 	socketCheck,
 	emitChoice,
 	emitTurn,
-	gameOver,
-	restartGame,
 	turn,
-	updateMsgTextAndAddPoints,
-	disconnectCleanUp,
 } = require("../socketio_util");
 
 // global variables

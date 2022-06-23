@@ -9,34 +9,17 @@ const customCors = require("./cors");
 const {
 	addUser,
 	updateUser,
-	removeUser,
 	getUser,
-	getUsersInRoom,
-	changeTurn,
-	addPoint,
-	resetPoint,
-	changeHadPoints,
-	resetHadPoints,
-	resetPoints,
-	resetPlayerHadPoints,
-	resetPlayerTurns,
 } = require("./users");
-const { chooseWord, updateRoom, getWord, removeRoom, checkWord } = require("./words");
+const { updateRoom } = require("./words");
 const { addRound, increaseRound, getRound, whoseTurn } = require("./turn");
-const { addTotalScore, reduceTotalScore, getTotalScore } = require("./score");
+const { addTotalScore } = require("./score");
 const {
 	myClientList,
 	timers,
 	lines,
-	currentArtist,
-	choiceTime,
 	turnTime,
-	ROUND,
 	updatePlayers,
-	socketCheck,
-	emitChoice,
-	emitTurn,
-	gameOver,
 	restartGame,
 	turn,
 	updateMsgTextAndAddPoints,

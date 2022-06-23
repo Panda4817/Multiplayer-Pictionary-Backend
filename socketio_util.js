@@ -112,7 +112,7 @@ const restartGame = (room, socket) => {
 	addTotalScore(room);
 	addRound(room);
 	updatePlayers(socket, room);
-	sendRoomStats(room, getUsersInRoom(room).length).then(console.log).catch((e) => console.log(e.message));
+	sendRoomStats(getUsersInRoom(room).length).then(console.log).catch((e) => console.log(e.message));
 	socket.broadcast.to(room).emit("reset");
 };
 
