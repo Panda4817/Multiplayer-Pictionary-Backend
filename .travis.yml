@@ -6,13 +6,13 @@ install:
   - npm install
 script:
   - npm test
-deploy:
-  provider: elasticbeanstalk
-  access_key_id: "$ACCESSKEYID"
-  secret_access_key: "$SECRETACCESSKEY"
-  region: "eu-west-2"
-  app: "picto-backend"
-  env: "Pictobackend-env"
-  bucket_name: "elasticbeanstalk-eu-west-2-688957172230"
-  on:
-    branch: master
+# deploy:
+#   provider: elasticbeanstalk
+#   access_key_id: "$ACCESSKEYID"
+#   secret_access_key: "$SECRETACCESSKEY"
+#   region: "eu-west-2"
+#   app: "picto-backend"
+#   env: "Pictobackend-env"
+#   bucket_name: "elasticbeanstalk-eu-west-2-688957172230"
+#   on:
+#     branch: master
