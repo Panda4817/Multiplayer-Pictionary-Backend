@@ -11,7 +11,7 @@ const {
 const { updateRoom, getWord, removeRoom, checkWord } = require("./words");
 const { addRound, whoseTurn } = require("./turn");
 const { addTotalScore, reduceTotalScore } = require("./score");
-const {sendRoomStats} = require("./kafka");
+// const {sendRoomStats} = require("./kafka");
 
 // Standard times for choosing and drawing
 const envDependentVariables = (process) => {
@@ -112,7 +112,7 @@ const restartGame = (room, socket) => {
 	addTotalScore(room);
 	addRound(room);
 	updatePlayers(socket, room);
-	sendRoomStats(getUsersInRoom(room).length).then(console.log).catch((e) => console.log(e.message));
+	// sendRoomStats(getUsersInRoom(room).length).then(console.log).catch((e) => console.log(e.message));
 	socket.broadcast.to(room).emit("reset");
 };
 
