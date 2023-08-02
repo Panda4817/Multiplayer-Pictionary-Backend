@@ -1,20 +1,11 @@
-const {
-	removeUser,
-	getUser,
-	getUsersInRoom,
-	addPoint,
-	changeHadPoints,
-	resetPoints,
-	resetPlayerHadPoints,
-	resetPlayerTurns,
-} = require("./users");
-const { updateRoom, getWord, removeRoom, checkWord } = require("./words");
-const { addRound, whoseTurn } = require("./turn");
-const { addTotalScore, reduceTotalScore } = require("./score");
-// const {sendRoomStats} = require("./kafka");
+import { removeUser, getUser, getUsersInRoom, addPoint, changeHadPoints, resetPoints, resetPlayerHadPoints, resetPlayerTurns } from "./users.js";
+import { updateRoom, getWord, removeRoom, checkWord } from "./words.js";
+import { addRound, whoseTurn } from "./turn.js";
+import { addTotalScore, reduceTotalScore } from "./score.js";
+// import {sendRoomStats} from "./kafka.js";
 
 // Standard times for choosing and drawing
-const envDependentVariables = (process) => {
+export const envDependentVariables = (process) => {
 	let choiceTime = 1000;
 	let turnTime = 2000;
 	let ROUND = 1;
@@ -25,19 +16,19 @@ const envDependentVariables = (process) => {
 	}
 	return [choiceTime, turnTime, ROUND];
 };
-const [choiceTime, turnTime, ROUND] = envDependentVariables(process);
+export const [choiceTime, turnTime, ROUND] = envDependentVariables(process);
 
 // List of all client sockets
-const myClientList = {};
+export const myClientList = {};
 // Timers per room
-const timers = {};
+export const timers = {};
 // List of current person drawing per room
-const currentArtist = {};
+export const currentArtist = {};
 // Line history
-const lines = {};
+export const lines = {};
 
 // Function to emit any change to player data (room players)
-const updatePlayers = (socket, room) => {
+export const updatePlayers = (socket, room) => {
 	const list = getUsersInRoom(room);
 	if (list.length == 1) {
 		timers[room] = undefined;
@@ -48,7 +39,7 @@ const updatePlayers = (socket, room) => {
 };
 
 // Function to hand no socket
-const socketCheck = (socket, room, io) => {
+export const socketCheck = (socket, room, io) => {
 	if (socket === undefined || !socket) {
 		clearInterval(timers[room]);
 		timers[room] = undefined;
@@ -60,7 +51,7 @@ const socketCheck = (socket, room, io) => {
 };
 
 // Function to handle what happens when it is player choosing time
-const emitChoice = (round, room, socket, word1, word2, word3, chosen, io) => {
+export const emitChoice = (round, room, socket, word1, word2, word3, chosen, io) => {
 	if (socketCheck(socket, room, io)) {
 		return;
 	}
@@ -69,7 +60,7 @@ const emitChoice = (round, room, socket, word1, word2, word3, chosen, io) => {
 };
 
 // Function to handle what happens when it is player drawing time
-const emitTurn = (round, room, socket, chosen, word1, io) => {
+export const emitTurn = (round, room, socket, chosen, word1, io) => {
 	if (socketCheck(socket, room, io)) {
 		return;
 	}
@@ -90,7 +81,7 @@ const emitTurn = (round, room, socket, chosen, word1, io) => {
 };
 
 // Function to handle what happens when game is over, emits game over event
-const gameOver = (room, io) => {
+export const gameOver = (room, io) => {
 	clearInterval(timers[room]);
 	timers[room] = undefined;
 	io.to(room).emit("spinner");
@@ -100,7 +91,7 @@ const gameOver = (room, io) => {
 };
 
 // A function to handle the restart of a game
-const restartGame = (room, socket) => {
+export const restartGame = (room, socket) => {
 	clearInterval(timers[room]);
 	timers[room] = undefined;
 	currentArtist[room] = "";
@@ -117,7 +108,7 @@ const restartGame = (room, socket) => {
 };
 
 // a function  to handle the turn logic
-const turn = (room, io) => {
+export const turn = (room, io) => {
 	if (getWord(room)) {
 		const operator = io.to(room);
 		operator.emit("message", { user: "admin", text: "word was " + getWord(room) });
@@ -140,7 +131,7 @@ const turn = (room, io) => {
 };
 
 // Send Message event function - checks message, adds points
-const updateMsgTextAndAddPoints = (socket, user, message) => {
+export const updateMsgTextAndAddPoints = (socket, user, message) => {
 	let text = checkWord(message, user.room);
 	if (text === "Correct!") {
 		if (user.hadPoints === true) {
@@ -158,7 +149,7 @@ const updateMsgTextAndAddPoints = (socket, user, message) => {
 };
 
 // Disconnect clean up function
-const disconnectCleanUp = (socket, io) => {
+export const disconnectCleanUp = (socket, io) => {
 	delete myClientList[socket.id];
 	const user = getUser(socket.id);
 	if (user === undefined || !user) {
@@ -189,24 +180,4 @@ const disconnectCleanUp = (socket, io) => {
 				" has left! If they were drawing, wait for their turn to end to continue.",
 		});
 	}
-};
-
-module.exports = {
-	myClientList,
-	timers,
-	lines,
-	currentArtist,
-	choiceTime,
-	turnTime,
-	ROUND,
-	updatePlayers,
-	socketCheck,
-	emitChoice,
-	emitTurn,
-	gameOver,
-	restartGame,
-	turn,
-	updateMsgTextAndAddPoints,
-	disconnectCleanUp,
-	envDependentVariables,
 };

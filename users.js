@@ -1,4 +1,5 @@
-const Filter = require("bad-words");
+import Filter from "bad-words";
+
 const filter = new Filter();
 const users = [];
 const emojiList = [
@@ -392,7 +393,7 @@ const emojiList = [
 ];
 
 // Function to add a user to users lists
-const addUser = ({ id, name, room, avatar }) => {
+export const addUser = ({ id, name, room, avatar }) => {
 	name = name.trim().toLowerCase();
 	room = room.trim().toLowerCase();
 
@@ -443,7 +444,7 @@ const addUser = ({ id, name, room, avatar }) => {
 };
 
 // Update user
-const updateUser = ({ id, name, room, avatar }) => {
+export const updateUser = ({ id, name, room, avatar }) => {
 	name = name.trim().toLowerCase();
 	room = room.trim().toLowerCase();
 
@@ -489,7 +490,7 @@ const updateUser = ({ id, name, room, avatar }) => {
 };
 
 // A function to change turn property of user (so every player in a room gets one turn each per round)
-const changeTurn = (id, bool) => {
+export const changeTurn = (id, bool) => {
 	const index = users.findIndex((user) => user.id === id);
 	const user = users[index];
 	user.turn = bool;
@@ -498,7 +499,7 @@ const changeTurn = (id, bool) => {
 };
 
 // A function to remove a user when user leaves room
-const removeUser = (id) => {
+export const removeUser = (id) => {
 	const index = users.findIndex((user) => user.id === id);
 
 	if (index !== -1) {
@@ -507,13 +508,13 @@ const removeUser = (id) => {
 };
 
 // A function to get user with id
-const getUser = (id) => users.find((user) => user.id === id);
+export const getUser = (id) => users.find((user) => user.id === id);
 
 // A function to get all players in a room
-const getUsersInRoom = (room) => users.filter((user) => user.room === room);
+export const getUsersInRoom = (room) => users.filter((user) => user.room === room);
 
 // A function to add points to a user
-const addPoint = (id, point) => {
+export const addPoint = (id, point) => {
 	const index = users.findIndex((user) => user.id === id);
 	const user = users[index];
 	user.points += point;
@@ -522,7 +523,7 @@ const addPoint = (id, point) => {
 };
 
 // A function to reset points to 0 for a user
-const resetPoint = (id) => {
+export const resetPoint = (id) => {
 	const index = users.findIndex((user) => user.id === id);
 	const user = users[index];
 	user.points = 0;
@@ -532,7 +533,7 @@ const resetPoint = (id) => {
 };
 
 // A function to change hadPoints property (so users cannot keep getting points when guessed right)
-const changeHadPoints = (id) => {
+export const changeHadPoints = (id) => {
 	const index = users.findIndex((user) => user.id === id);
 	const user = users[index];
 	user.hadPoints = true;
@@ -541,7 +542,7 @@ const changeHadPoints = (id) => {
 };
 
 // A function to change hadPoints property to false when new game started
-const resetHadPoints = (id) => {
+export const resetHadPoints = (id) => {
 	const index = users.findIndex((user) => user.id === id);
 	const user = users[index];
 	user.hadPoints = false;
@@ -550,38 +551,22 @@ const resetHadPoints = (id) => {
 };
 
 // A function to handle resetting points for each player in the room
-const resetPoints = (room) => {
+export const resetPoints = (room) => {
 	const usersList = getUsersInRoom(room);
 	usersList.map((user) => resetPoint(user.id));
 	return;
 };
 
 // A function to reset the hadPoints property for each user
-const resetPlayerHadPoints = (room) => {
+export const resetPlayerHadPoints = (room) => {
 	const usersList = getUsersInRoom(room);
 	usersList.map((user) => resetHadPoints(user.id));
 	return;
 };
 
 // A function to handle changing turn property for each user in the room
-const resetPlayerTurns = (room) => {
+export const resetPlayerTurns = (room) => {
 	const usersList = getUsersInRoom(room);
 	usersList.map((u) => changeTurn(u.id, false));
 	return;
-};
-
-module.exports = {
-	addUser,
-	updateUser,
-	removeUser,
-	getUser,
-	getUsersInRoom,
-	changeTurn,
-	addPoint,
-	resetPoint,
-	changeHadPoints,
-	resetHadPoints,
-	resetPoints,
-	resetPlayerHadPoints,
-	resetPlayerTurns,
 };

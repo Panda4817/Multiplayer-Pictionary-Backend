@@ -7,6 +7,7 @@ Made using NodeJS and Express server.
 
 ## Requirements
 - Node version 18
+- ES Modules
 
 ## Usage
 ### Run `npm start`

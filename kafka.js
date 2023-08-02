@@ -1,4 +1,4 @@
-const { Kafka } = require('kafkajs');
+import { Kafka } from 'kafkajs';
 
 const test = process.env.TEST == "true" ? true : false;
 
@@ -17,7 +17,7 @@ const kafka = new Kafka({
 const producer = kafka.producer()
 
 // Send a message about which word is chosen for drawing
-const sendWordMessage = async (word) => {
+export const sendWordMessage = async (word) => {
     await producer.connect()
     await producer.send({
         topic: 'logs',
@@ -30,7 +30,7 @@ const sendWordMessage = async (word) => {
 }
 
 // Send number of people in room
-const sendRoomStats = async (count) => {
+export const sendRoomStats = async (count) => {
   await producer.connect()
   await producer.send({
       topic: 'logs',
@@ -40,9 +40,4 @@ const sendRoomStats = async (count) => {
   }).then(console.log).catch(e => console.error(e.message));
   await producer.disconnect()
   return true;
-}
- 
-module.exports = {
-   sendWordMessage,
-   sendRoomStats
 }

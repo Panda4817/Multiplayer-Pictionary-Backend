@@ -1,32 +1,18 @@
-const chai = require("chai");
-const assert = chai.assert;
-const { server, io } = require("../index");
-const io_client = require("socket.io-client");
+import { assert } from "chai";
+import { connect } from "socket.io-client";
+
+// My custom modules and their functions imported
+import { server, io } from "../index.js";
+import { getUser, getUsersInRoom } from "../users.js";
+import { updateRoom, getWord } from "../words.js";
+import { addTotalScore, getTotalScore } from "../score.js";
+import { myClientList, timers, lines, currentArtist, choiceTime, turnTime, socketCheck, emitChoice, emitTurn, turn } from "../socketio_util.js";
+
 const socketURL = "http://localhost:5001";
 const options = {
 	transports: ["websocket"],
 	forceNew: true,
 };
-
-// My custom modules and their functions imported
-const {
-	getUser,
-	getUsersInRoom,
-} = require("../users");
-const { updateRoom, getWord } = require("../words");
-const { addTotalScore, getTotalScore } = require("../score");
-const {
-	myClientList,
-	timers,
-	lines,
-	currentArtist,
-	choiceTime,
-	turnTime,
-	socketCheck,
-	emitChoice,
-	emitTurn,
-	turn,
-} = require("../socketio_util");
 
 // global variables
 const avatar = "0x1F600";
@@ -50,7 +36,7 @@ describe("Socket integration tests", function () {
 	});
 
 	const makeSocket = () => {
-		const socket = io_client.connect(socketURL, options);
+		const socket = connect(socketURL, options);
 		socket.on("connection", function () {
 			assert.deepEqual(myClientList[socket.id], socket);
 		});
@@ -832,6 +818,56 @@ describe("Socket integration tests", function () {
 			});
 		}, medium_time);
 	});
+
+	it("sendMessage event - right word with a space", function (done) {
+		// arrange
+		const socket = makeSocket();
+		const socket2 = makeSocket();
+		const word = "showroom";
+		const callback = () => {
+			console.log("test callback");
+		};
+
+		// act and assert
+		socket.emit("join", { name: n1, room: room, avatar: avatar, update: false });
+		socket2.emit("join", { name: n2, room: room, avatar: avatar, update: false });
+		setTimeout(() => {
+			const users = getUsersInRoom(room);
+			assert.equal(users.length, 2);
+			addTotalScore(room);
+			socket.emit("chosenWord", { word, room });
+			currentArtist[room] = socket.id;
+		}, small_time);
+		setTimeout(() => {
+			socket2.emit("sendMessage", "show1room", callback);
+			socket.on("message", (data2) => {
+				console.log("msg sent to all users, client 1 tests");
+				assert.hasAllDeepKeys(data2, ["user", "text", "img"]);
+				assert.equal(data2["user"], n2);
+				assert.equal(data2["text"], "Test2 is correct!");
+				assert.equal(data2["img"], avatar);
+				const user = getUser(socket.id);
+				const user2 = getUser(socket2.id);
+				assert.equal(user2["hadPoints"], true);
+				assert.equal(user2["points"], 200);
+				assert.equal(user["points"], 100);
+			});
+			socket2.on("message", (data2) => {
+				console.log("msg sent to all users, client 2 tests");
+				assert.hasAllDeepKeys(data2, ["user", "text", "img"]);
+				assert.equal(data2["user"], n2);
+				assert.equal(data2["text"], "Test2 is correct!");
+				assert.equal(data2["img"], avatar);
+				const user = getUser(socket.id);
+				const user2 = getUser(socket2.id);
+				assert.equal(user2["hadPoints"], true);
+				assert.equal(user2["points"], 200);
+				assert.equal(user["points"], 100);
+				done();
+			});
+		}, medium_time);
+	});
+
 
 	it("sendMessage event - repeat word", function (done) {
 		// arrange

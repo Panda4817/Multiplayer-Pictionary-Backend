@@ -1,16 +1,17 @@
-const Filter = require('bad-words');
+import Filter from 'bad-words';
+import { readFileSync } from "fs";
+// import {sendWordMessage} from "./kafka.js";
+
 const filter = new Filter();
-current_word = {}
-previous_words = {}
-const fs = require("fs")
-// const {sendWordMessage} = require("./kafka");
+const current_word = {}
+const previous_words = {}
 
 // Function to choose 3 words from the noun list
-const chooseWord = (round, room) => {
+export const chooseWord = (round, room) => {
     // Clear the current word
     current_word[room] = ''
     // Retrieve words from txt file
-    let text = fs.readFileSync("./pictionary.txt", "utf-8").split('\n').map(w => { return w.trim() })
+    let text = readFileSync("./pictionary.txt", "utf-8").split('\n').map(w => { return w.trim() })
     // Filter list, checking against previous words used
     if (previous_words[room]) {
         text = text.filter((w) => {
@@ -30,7 +31,7 @@ const chooseWord = (round, room) => {
 }
 
 // Function to update current word for room
-const updateRoom = (room, word) => {
+export const updateRoom = (room, word) => {
     // sendWordMessage(word).then(console.log).catch((e) => console.log(e.message));
     current_word[room] = word
     // Keep track of previous words so all new words are provided for the duration of the room
@@ -43,26 +44,26 @@ const updateRoom = (room, word) => {
 }
 
 // Function to get word for a room
-const getWord = (room) => {
+export const getWord = (room) => {
     return current_word[room]
 }
 
 // Function to remove room from object when no players are left
-const removeRoom = (room) => {
+export const removeRoom = (room) => {
     delete current_word[room]
     delete previous_words[room]
     return
 }
 
 // Function to check message against room word to check if it has been guessed right
-const checkWord = (message, room) => {
+export const checkWord = (message, room) => {
     var msg = ''
-    const sanitizedMessage = message.replace(/[^A-Za-z]/g,"")
+    const sanitizedMessage = message.replace(/[^A-Za-z]/g," ")
     const myWord = sanitizedMessage.trim().toLowerCase()
     const word = getWord(room)
     const parts = word.split(" ")
     if (word != myWord) {
-        msg = sanitizedMessage === "" ? "Not the word!\n" + message : "Not the word!\n" + filter.clean(sanitizedMessage)
+        msg = sanitizedMessage.trim() === "" ? "Not the word!\n" + message : "Not the word!\n" + filter.clean(sanitizedMessage)
         if (parts.length > 1) {
             const msg_parts = myWord.split(parts[0])
             if (msg_parts.length < 2) {
@@ -82,12 +83,4 @@ const checkWord = (message, room) => {
     }
     return msg
 
-}
-
-module.exports = {
-    chooseWord,
-    updateRoom,
-    getWord,
-    removeRoom,
-    checkWord
 }

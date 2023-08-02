@@ -1,39 +1,24 @@
 // Importing packages
-require("dotenv").config();
-const express = require("express");
-const socketio = require("socket.io");
-const http = require("http");
-const customCors = require("./cors");
+import 'dotenv/config'
+import express from "express";
+import { Server } from "socket.io";
+import { createServer } from "http";
+import { corsOptions } from "./cors.js";
 
 // My custom modules and their functions imported
-const {
-	addUser,
-	updateUser,
-	getUser,
-} = require("./users");
-const { updateRoom } = require("./words");
-const { addRound, increaseRound, getRound, whoseTurn } = require("./turn");
-const { addTotalScore } = require("./score");
-const {
-	myClientList,
-	timers,
-	lines,
-	turnTime,
-	updatePlayers,
-	restartGame,
-	turn,
-	updateMsgTextAndAddPoints,
-	disconnectCleanUp,
-} = require("./socketio_util");
+import { router } from "./router.js";
+import { addUser, updateUser, getUser } from "./users.js";
+import { updateRoom } from "./words.js";
+import { addTotalScore } from "./score.js";
+import { myClientList, timers, lines, turnTime, updatePlayers, restartGame, turn, updateMsgTextAndAddPoints, disconnectCleanUp } from "./socketio_util.js";
 
 // App set up
 const PORT = process.env.PORT || 5001;
-const router = require("./router");
 const app = express();
-const server = http.createServer(app);
-const io = socketio(server, {
+export const server = createServer(app);
+export const io = new Server(server, {
 	allowEIO3: false,
-	cors: customCors.corsOptions
+	cors: corsOptions
 });
 
 // socket events
@@ -64,7 +49,6 @@ io.on("connection", (socket) => {
 
 		if (error) return callback(error);
 		socket.join(user.room);
-		socket.emit();
 		updatePlayers(socket, user.room);
 		if (update) {
 			socket.emit("closeModal");
@@ -155,5 +139,3 @@ io.on("connection", (socket) => {
 
 app.use(router);
 server.listen(PORT, () => console.log(`Server has started on port ${PORT}`));
-
-module.exports = { server, io };

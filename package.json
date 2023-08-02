@@ -1,11 +1,12 @@
 {
 	"name": "server",
-	"version": "2.0.0",
+	"version": "3.0.0",
+	"type": "module",
 	"description": "",
 	"main": "index.js",
 	"scripts": {
 		"start": "node index.js",
-		"test": "nyc --reporter=text mocha"
+		"test": "c8 --reporter=text mocha"
 	},
 	"keywords": [],
 	"author": "",
@@ -20,9 +21,9 @@
 		"socket.io-client": "^4.4.0"
 	},
 	"devDependencies": {
-		"nyc": "^15.1.0",
 		"chai": "^4.3.4",
 		"chai-http": "^4.3.0",
-		"mocha": "^9.2.2"
+		"mocha": "^9.2.2",
+		"c8": "^8.0.1"
 	}
 }

@@ -1,25 +1,10 @@
-const chai = require("chai");
-const assert = chai.assert;
+import { assert  } from "chai";
 
 // My custom modules and their functions imported
-const {
-	addUser,
-	updateUser,
-	removeUser,
-	getUser,
-	getUsersInRoom,
-	changeTurn,
-	addPoint,
-	resetPoint,
-	changeHadPoints,
-	resetHadPoints,
-	resetPoints,
-	resetPlayerHadPoints,
-	resetPlayerTurns,
-} = require("../users");
-const { chooseWord, updateRoom, getWord, removeRoom, checkWord } = require("../words");
-const { addRound, increaseRound, getRound, whoseTurn } = require("../turn");
-const { addTotalScore, reduceTotalScore, getTotalScore } = require("../score");
+import { addUser, updateUser, removeUser, getUser, getUsersInRoom, changeTurn, addPoint, resetPoint, changeHadPoints, resetHadPoints, resetPoints, resetPlayerHadPoints, resetPlayerTurns } from "../users.js";
+import { chooseWord, updateRoom, getWord, removeRoom, checkWord } from "../words.js";
+import { addRound, increaseRound, getRound, whoseTurn } from "../turn.js";
+import { addTotalScore, reduceTotalScore, getTotalScore } from "../score.js";
 
 // Global const
 const room = "testroom";

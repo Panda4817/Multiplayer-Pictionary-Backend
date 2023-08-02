@@ -1,7 +1,6 @@
-require("dotenv").config();
-const chai = require("chai");
-const assert = chai.assert;
-const { envDependentVariables } = require("../socketio_util");
+import 'dotenv/config'
+import { assert } from "chai";
+import { envDependentVariables } from "../socketio_util.js";
 
 describe("Environment variables tests", function () {
 	let test;
